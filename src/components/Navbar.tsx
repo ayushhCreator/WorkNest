@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
               {isConnected ? (
                 <Wifi className="h-4 w-4 text-green-500" />
               ) : (
@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
               <span className="text-sm text-gray-600 hidden sm:inline">
                 {isConnected ? 'Connected' : 'Disconnected'}
               </span>
-            </div>
+            </div> */}
 
             <NotificationDropdown />
 

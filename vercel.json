@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/accept-invite/:token", "destination": "/" },
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}

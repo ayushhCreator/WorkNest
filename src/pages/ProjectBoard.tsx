@@ -356,7 +356,7 @@ const ProjectBoard: React.FC = () => {
             style={{ backgroundColor: project.color }}
           />
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{project.title}</h1>
+            <h1 className="text- font-bold text-gray-900">{project.title}</h1>
             <p className="text-gray-600 mt-1">{project.description}</p>
           </div>
         </div>
@@ -396,7 +396,7 @@ const ProjectBoard: React.FC = () => {
               className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <UserPlus className="h-4 w-4" />
-              <span>Invite</span>
+              {/* <span>Invite</span> */}
             </button>
           )}
           {/* <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
