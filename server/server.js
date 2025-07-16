@@ -20,9 +20,16 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 
-// ✅ Use your Vercel frontend URL here
-const CLIENT_ORIGIN = process.env.CLIENT_URL || 'https://work-nest.vercel.app';
+// ✅ Define allowed frontend origins
+const allowedOrigins = [
+  'https://work-nest.vercel.app',
+  'http://localhost:5173'
+];
 
+// ✅ Use correct CORS origin
+const CLIENT_ORIGIN = process.env.CLIENT_URL || allowedOrigins[0];
+
+// ✅ Initialize Socket.IO with CORS
 const io = new Server(httpServer, {
   cors: {
     origin: CLIENT_ORIGIN,
@@ -45,6 +52,9 @@ app.use(cors({
   },
   credentials: true
 }));
+
+// ✅ Middleware to parse incoming JSON
+app.use(express.json());
 
 // ✅ API Routes
 app.use('/api/auth', authRoutes);
