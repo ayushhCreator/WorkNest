@@ -13,30 +13,35 @@ import invitationRoutes from './routes/invitations.js';
 import notificationRoutes from './routes/notifications.js';
 import analyticsRoutes from './routes/analytics.js';
 import { authenticateToken } from './middleware/auth.js';
-import './jobs/reminderJob.js'; // Start cron jobs
+import './jobs/reminderJob.js';
 
 dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+
+// ✅ Use your Vercel frontend URL here
+const CLIENT_ORIGIN = process.env.CLIENT_URL || 'https://wok-nest.vercel.app';
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"]
+    origin: CLIENT_ORIGIN,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
   }
 });
 
-// Connect to MongoDB
+// ✅ Connect to MongoDB
 connectDB();
 
-// Middleware
+// ✅ Enable CORS
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: CLIENT_ORIGIN,
   credentials: true
 }));
 app.use(express.json());
 
-// Routes
+// ✅ API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', authenticateToken, projectRoutes);
 app.use('/api/tasks', authenticateToken, taskRoutes);
@@ -45,7 +50,7 @@ app.use('/api/invitations', invitationRoutes);
 app.use('/api/notifications', authenticateToken, notificationRoutes);
 app.use('/api/analytics', authenticateToken, analyticsRoutes);
 
-// Socket.io connection
+// ✅ Socket.io Auth Middleware
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (token) {
@@ -61,10 +66,10 @@ io.use((socket, next) => {
   }
 });
 
+// ✅ Socket.io Events
 io.on('connection', (socket) => {
   console.log('User connected:', socket.userId);
 
-  // Join user's personal room for notifications
   socket.join(socket.userId);
 
   socket.on('join-project', (projectId) => {
@@ -90,6 +95,7 @@ io.on('connection', (socket) => {
   });
 });
 
+// ✅ Start Server
 const PORT = process.env.PORT || 5001;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
