@@ -22,7 +22,7 @@ const httpServer = createServer(app);
 
 // ✅ Define allowed frontend origins
 const allowedOrigins = [
-  'https://work-nest.vercel.app',
+  'https://work-nest-rho.vercel.app',
   'http://localhost:5173'
 ];
 
