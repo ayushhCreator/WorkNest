@@ -21,7 +21,7 @@ const app = express();
 const httpServer = createServer(app);
 
 // ✅ Use your Vercel frontend URL here
-const CLIENT_ORIGIN = process.env.CLIENT_URL || 'https://wok-nest.vercel.app';
+const CLIENT_ORIGIN = process.env.CLIENT_URL || 'https://work-nest.vercel.app';
 
 const io = new Server(httpServer, {
   cors: {
@@ -34,12 +34,17 @@ const io = new Server(httpServer, {
 // ✅ Connect to MongoDB
 connectDB();
 
-// ✅ Enable CORS
+// ✅ Enable CORS for HTTP routes
 app.use(cors({
-  origin: CLIENT_ORIGIN,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
-app.use(express.json());
 
 // ✅ API Routes
 app.use('/api/auth', authRoutes);
