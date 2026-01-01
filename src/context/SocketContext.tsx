@@ -24,12 +24,22 @@ interface SocketProviderProps {
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    // Temporarily disable Socket.IO to prevent resource exhaustion on free tier
-    // This can be re-enabled once the app is moved to a paid plan or optimized
-    const enableSocketIO = false;
+    // Don't initialize socket while auth is still loading
+    if (loading) return;
+    
+    // Re-enabled Socket.IO with optimizations for production
+    const enableSocketIO = true;
+    
+    // Clean up existing socket first
+    if (socket) {
+      socket.removeAllListeners();
+      socket.disconnect();
+      setSocket(null);
+      setIsConnected(false);
+    }
     
     if (user && enableSocketIO) {
       const token = localStorage.getItem('token');
@@ -39,11 +49,13 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         
         const newSocket = io(apiUrl, {
           auth: { token },
-          transports: ['polling'], // Only use polling to reduce resource usage
-          upgrade: false, // Disable upgrade to websocket
+          transports: ['polling', 'websocket'], // Allow both transports
+          upgrade: true, // Allow upgrade to websocket
           timeout: 30000,
           forceNew: false, // Don't force new connections
-          reconnection: false // Disable auto-reconnection to prevent spam
+          reconnection: true, // Enable reconnection
+          reconnectionAttempts: 3, // Limit reconnection attempts
+          reconnectionDelay: 2000 // 2 second delay between attempts
         });
 
         newSocket.on('connect', () => {
@@ -69,20 +81,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           console.log('Cleaning up socket connection');
           newSocket.removeAllListeners();
           newSocket.disconnect();
+          setSocket(null);
+          setIsConnected(false);
         };
       }
     }
-
-    // Cleanup function for when user logs out or component unmounts
-    return () => {
-      if (socket) {
-        socket.removeAllListeners();
-        socket.disconnect();
-        setSocket(null);
-        setIsConnected(false);
-      }
-    };
-  }, [user?.id]); // Only depend on user ID to prevent unnecessary recreations
+  }, [user.id, loading, socket, user]); // Depend on user ID and loading state
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

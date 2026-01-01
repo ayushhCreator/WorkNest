@@ -19,8 +19,16 @@ console.log("SMTP_PASS:", process.env.SMTP_PASS);
 /**
  * Send project invitation email
  */
-export const sendInvitationEmail = async (email, inviterName, projectTitle, inviteToken) => {
+export const sendInvitationEmail = async (email, inviterName, projectTitle, inviteToken, role = 'member') => {
   const inviteUrl = `${process.env.CLIENT_URL}/accept-invite/${inviteToken}`;
+  
+  // Role descriptions for email
+  const roleDescriptions = {
+    viewer: 'Viewer (can view tasks and comments)',
+    member: 'Member (can create and edit tasks)',
+    admin: 'Admin (can manage project and members)',
+    owner: 'Owner (full project control)'
+  };
 
   const mailOptions = {
     from: process.env.SMTP_FROM || process.env.SMTP_USER,
@@ -31,6 +39,9 @@ export const sendInvitationEmail = async (email, inviterName, projectTitle, invi
         <h2 style="color: #3B82F6;">You're invited to WorkNest!</h2>
         <p>Hi there,</p>
         <p><strong>${inviterName}</strong> has invited you to join the project <strong>"${projectTitle}"</strong> on WorkNest.</p>
+        <div style="background-color: #F3F4F6; padding: 16px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0; font-weight: bold; color: #374151;">Your Role: ${roleDescriptions[role] || role}</p>
+        </div>
         <p>Click the button below to accept the invitation and create your account:</p>
         <a href="${inviteUrl}" style="display: inline-block; background-color: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">Accept Invitation</a>
         <p>Or copy and paste this link in your browser:</p>

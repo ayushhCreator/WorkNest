@@ -51,6 +51,7 @@ const taskSchema = new mongoose.Schema({
     filename: String,
     originalName: String,
     url: String,
+    publicId: String, // Added for Cloudinary deletion
     size: Number,
     mimetype: String,
     uploadedBy: {

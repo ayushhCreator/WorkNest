@@ -1,27 +1,26 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import worknestLogo from '../images/worknest_logo.svg'; // Adjust the path as necessary
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { LogIn, Mail, Lock, Eye, EyeOff } from "lucide-react";
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       await login(email, password);
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+      navigate("/dashboard");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
     }
@@ -32,16 +31,12 @@ const Login: React.FC = () => {
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="text-center mb-8">
-              <div className="flex items-center justify-center mb-6">
-              {/* Use the imported SVG logo */}
-              <img 
-                src={worknestLogo} 
-                alt="WorkNest Logo" 
-                className="h-12 w-auto mr-3"
-              />
-             
+            <div className="flex items-center justify-center mb-6">
+              <div className="text-3xl font-bold text-blue-600">WorkNest</div>
             </div>
-            <p className="text-gray-600">Welcome back! Please sign in to your account.</p>
+            <p className="text-gray-600">
+              Welcome back! Please sign in to your account.
+            </p>
           </div>
 
           {error && (
@@ -75,7 +70,7 @@ const Login: React.FC = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -87,7 +82,11 @@ const Login: React.FC = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -110,8 +109,11 @@ const Login: React.FC = () => {
 
           <div className="mt-8 text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+              Don't have an account?{" "}
+              <Link
+                to="/register"
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
                 Sign up
               </Link>
             </p>
