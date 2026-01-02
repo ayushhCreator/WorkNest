@@ -1,40 +1,55 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
 import Logo from '../images/worknest_logo.svg';
 import { 
   LayoutDashboard, 
   User, 
-  LogOut 
+  LogOut,
+  ChevronDown,
+  Settings,
+  HelpCircle
 } from 'lucide-react';
+import { useState } from 'react';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="container mx-auto px-4">
+    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-8">
-          <Link to="/dashboard" className="flex items-center gap-2 text-2xl font-bold text-blue-600">
-  <img src={Logo} alt="WorkNest Logo" className="w-40 h-10" />
-  
-</Link>
+          {/* Left side - Logo and navigation */}
+          <div className="flex items-center gap-8">
+            <Link to="/dashboard" className="flex items-center">
+              <img src={Logo} alt="WorkNest" className="h-8" />
+            </Link>
            
-            <div className="hidden md:flex space-x-6">
+            <div className="hidden md:flex items-center gap-1">
               <Link
                 to="/dashboard"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   location.pathname === '/dashboard'
-                    ? 'bg-blue-100 text-blue-700'
+                    ? 'bg-blue-50 text-blue-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
@@ -44,36 +59,90 @@ const Navbar: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            {/* <div className="flex items-center space-x-2">
-              {isConnected ? (
-                <Wifi className="h-4 w-4 text-green-500" />
-              ) : (
-                <WifiOff className="h-4 w-4 text-red-500" />
-              )}
-              <span className="text-sm text-gray-600 hidden sm:inline">
-                {isConnected ? 'Connected' : 'Disconnected'}
-              </span>
-            </div> */}
-
+          {/* Right side - Actions and user */}
+          <div className="flex items-center gap-3">
+            {/* Notifications */}
             <NotificationDropdown />
 
-            <div className="flex items-center space-x-3">
-              <Link
-                to="/profile"
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            {/* User Menu */}
+            <div className="relative">
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
               >
-                <User className="h-4 w-4" />
-                <span className="hidden md:inline">{user?.name}</span>
-              </Link>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
+                  {user?.name ? getInitials(user.name) : 'U'}
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                  <p className="text-xs text-gray-500">{user?.role || 'Member'}</p>
+                </div>
+                <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+              </motion.button>
               
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden md:inline">Logout</span>
-              </button>
+              {showUserMenu && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setShowUserMenu(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-20"
+                  >
+                    {/* User info header */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                    </div>
+
+                    {/* Menu items */}
+                    <div className="py-2">
+                      <Link
+                        to="/profile"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <User className="h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                      <Link
+                        to="/settings"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <Settings className="h-4 w-4" />
+                        <span>Settings</span>
+                      </Link>
+                      <Link
+                        to="/help"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <HelpCircle className="h-4 w-4" />
+                        <span>Help & Support</span>
+                      </Link>
+                    </div>
+
+                    {/* Logout */}
+                    <div className="border-t border-gray-100 pt-2">
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          handleLogout();
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
             </div>
           </div>
         </div>
