@@ -30,19 +30,19 @@ const AcceptInvite: React.FC = () => {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    const fetchInvitation = async () => {
+      try {
+        const response = await axios.get(`/api/invitations/${token}`);
+        setInvitation(response.data);
+      } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        setError(error.response?.data?.message || 'Invalid or expired invitation');
+      }
+    };
+
     if (token) {
       fetchInvitation();
     }
   }, [token]);
-
-  const fetchInvitation = async () => {
-    try {
-      const response = await axios.get(`/api/invitations/${token}`);
-      setInvitation(response.data);
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Invalid or expired invitation');
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +70,7 @@ const AcceptInvite: React.FC = () => {
       setTimeout(() => {
         navigate('/login');
       }, 3000);
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(error.response?.data?.message || 'Failed to accept invitation');
     } finally {
       setLoading(false);

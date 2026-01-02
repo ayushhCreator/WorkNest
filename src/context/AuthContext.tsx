@@ -19,6 +19,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -67,6 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(user);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error && 'response' in error 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ? (error as any).response?.data?.message || 'Login failed'
         : 'Login failed';
       throw new Error(errorMessage);
@@ -83,7 +85,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(user);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error && 'response' in error 
-        ? (error as unknown).response?.data?.message || 'Registration failed'
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ? (error as any).response?.data?.message || 'Registration failed'
         : 'Registration failed';
       throw new Error(errorMessage);
     }

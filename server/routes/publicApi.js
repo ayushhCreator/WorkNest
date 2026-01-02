@@ -4,6 +4,7 @@ import Task from '../models/Task.js';
 import Cycle from '../models/Cycle.js';
 import User from '../models/User.js';
 import { authenticateApiKey, requireApiKeyPermission } from '../middleware/apiAuth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 

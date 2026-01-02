@@ -4,6 +4,7 @@ import Project from '../models/Project.js';
 import { upload, uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js';
 import { io } from '../server.js';
 import { generateTaskId } from '../utils/idGenerator.js';
+import { cache, clearCache } from '../middleware/cache.js';
 
 import {
   notifyTaskAssigned,
@@ -21,7 +22,7 @@ import {
 const router = express.Router();
 
 // Get tasks for project with search and filters
-router.get('/project/:projectId', async (req, res) => {
+router.get('/project/:projectId', cache(300), async (req, res) => {
   try {
     const { 
       search, 
@@ -152,6 +153,9 @@ router.post('/', async (req, res) => {
     // Emit real-time update
     io.to(project).emit('task-created', task);
 
+    // Clear cache for all users viewing this project
+    await clearCache(`*:*/api/tasks/project/${project}`);
+
     res.status(201).json(task);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -228,6 +232,9 @@ router.put('/:id', async (req, res) => {
 
     // Emit real-time update
     io.to(task.project.toString()).emit('task-updated', task);
+
+    // Clear cache
+    await clearCache(`*:*/api/tasks/project/${task.project}`);
 
     res.json(task);
   } catch (error) {
@@ -460,6 +467,9 @@ router.delete('/:id', async (req, res) => {
 
     // Emit real-time update
     io.to(task.project.toString()).emit('task-deleted', { taskId: req.params.id });
+
+    // Clear cache
+    await clearCache(`*:*/api/tasks/project/${task.project}`);
 
     res.json({ message: 'Task deleted successfully' });
   } catch (error) {

@@ -1,0 +1,75 @@
+
+> worknest-client@0.0.0 lint
+> eslint .
+
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/CreateProjectModal.tsx
+   7:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/CreateTaskModal.tsx
+  18:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/DashboardStats.tsx
+  58:6  warning  React Hook useEffect has a missing dependency: 'fetchTaskStats'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/FileUpload.tsx
+  15:3  error  'accept' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/InviteMemberModal.tsx
+  40:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/KanbanColumn.tsx
+  2:10  error  'DragDropContext' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/Navbar.tsx
+  11:3   error  'Settings' is defined but never used              @typescript-eslint/no-unused-vars
+  12:3   error  'Wifi' is defined but never used                  @typescript-eslint/no-unused-vars
+  13:3   error  'WifiOff' is defined but never used               @typescript-eslint/no-unused-vars
+  18:11  error  'isConnected' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/NotificationDropdown.tsx
+  2:19  error  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/ProjectAnalytics.tsx
+   3:25  error    'Line' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+  47:6   warning  React Hook useEffect has a missing dependency: 'fetchAnalytics'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/ProjectCard.tsx
+  9:3  error  'Edit2' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/context/AuthContext.tsx
+  22:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  70:21  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/context/SocketContext.tsx
+  12:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  87:6   warning  React Hook useEffect has a missing dependency: 'socket'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/pages/AcceptInvite.tsx
+  36:6   warning  React Hook useEffect has a missing dependency: 'fetchInvitation'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  42:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  73:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/pages/Home.tsx
+   98:9  error  'stats' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  105:9  error  'roles' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  113:9  error  'testimonials' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/pages/Profile.tsx
+  36:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/pages/ProjectBoard.tsx
+    3:27  error    'Droppable' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+    3:38  error    'Draggable' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+   12:17  error    'Settings' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  214:68  error    Unexpected any. Specify a different type                                                                  @typescript-eslint/no-explicit-any
+  325:6   warning  React Hook useEffect has a missing dependency: 'tasks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/pages/Register.tsx
+  37:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 34 problems (27 errors, 7 warnings)
+

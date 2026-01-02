@@ -15,7 +15,7 @@ interface CreateTaskModalProps {
     role: string;
   }>;
   onClose: () => void;
-  onTaskCreated: (task: any) => void;
+  onTaskCreated: (task: { _id: string; title: string; [key: string]: unknown }) => void;
 }
 
 
@@ -56,7 +56,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
 
       const response = await axios.post('/api/tasks', taskData);
       onTaskCreated(response.data);
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(error.response?.data?.message || 'Failed to create task');
     } finally {
       setLoading(false);

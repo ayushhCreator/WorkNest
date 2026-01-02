@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, X, Check, CheckCheck } from 'lucide-react';
+import { Bell, X, CheckCheck } from 'lucide-react';
 import axios from '../utils/axios';
 import { useSocket } from '../context/SocketContext';
 import { formatDistanceToNow } from 'date-fns';

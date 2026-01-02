@@ -9,6 +9,7 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSocket = () => {
   const context = useContext(SocketContext);
   if (!context) {
@@ -84,7 +85,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setIsConnected(false);
       }
     };
-  }, [user, loading]);
+  }, [user, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

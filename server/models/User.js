@@ -57,8 +57,7 @@ const userSchema = new mongoose.Schema({
   apiKeys: [{
     key: {
       type: String,
-      required: true,
-      unique: true
+      required: true
     },
     name: {
       type: String,

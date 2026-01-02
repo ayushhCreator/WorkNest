@@ -1,12 +1,12 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/db.js';
-import initializePassport from './config/passport.js';
+import './config/passport.js';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import taskRoutes from './routes/tasks.js';
@@ -23,15 +23,28 @@ import githubRoutes from './routes/github.js';
 import slackRoutes from './routes/slack.js';
 import webhookRoutes from './routes/webhooks.js';
 import publicApiRoutes from './routes/publicApi.js';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
 import { authenticateToken } from './middleware/auth.js';
 import { auditLogMiddleware } from './utils/auditLogger.js';
 import './jobs/reminderJob.js';
 import './jobs/digestJob.js';
 
-dotenv.config();
-
 const app = express();
 const httpServer = createServer(app);
+
+// Security & Performance Middleware
+app.use(helmet());
+app.use(compression());
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api', limiter);
 
 // ✅ Define allowed frontend origins
 const allowedOrigins = [
@@ -83,8 +96,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ✅ Initialize Passport for OAuth
+// ✅ Initialize Passport for OAuth
 app.use(passport.initialize());
-initializePassport();
+// Passport configuration is loaded via import side-effects
 
 // ✅ Initialize audit logging middleware
 app.use(auditLogMiddleware);

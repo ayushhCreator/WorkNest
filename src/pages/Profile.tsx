@@ -33,7 +33,7 @@ const Profile: React.FC = () => {
     setLoading(true);
 
     try {
-      const updateData: any = { name, email };
+      const updateData: Record<string, unknown> = { name, email };
       
       if (newPassword) {
         updateData.currentPassword = currentPassword;
@@ -46,7 +46,7 @@ const Profile: React.FC = () => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(error.response?.data?.message || 'Failed to update profile');
     } finally {
       setLoading(false);

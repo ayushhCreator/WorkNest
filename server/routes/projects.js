@@ -4,11 +4,12 @@ import Task from '../models/Task.js';
 import User from '../models/User.js';
 import ActivityLog from '../models/ActivityLog.js';
 import { v4 as uuidv4 } from 'uuid';
+import { cache, clearCache } from '../middleware/cache.js';
 
 const router = express.Router();
 
 // Get all projects for user
-router.get('/', async (req, res) => {
+router.get('/', cache(300), async (req, res) => {
   try {
     const { status = 'active', search } = req.query;
     
@@ -65,6 +66,9 @@ router.post('/', async (req, res) => {
     await project.save();
     await project.populate('owner', 'name email');
     await project.populate('members.user', 'name email');
+    
+    // Clear cache
+    await clearCache(`${req.user._id}:/api/projects`);
 
     res.status(201).json(project);
   } catch (error) {
@@ -73,7 +77,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get project by ID with activity logs
-router.get('/:id', async (req, res) => {
+router.get('/:id', cache(300), async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
       .populate('owner', 'name email')
@@ -138,6 +142,10 @@ router.put('/:id', async (req, res) => {
     await project.save();
     await project.populate('owner', 'name email');
     await project.populate('members.user', 'name email');
+
+    // Clear cache
+    await clearCache(`${req.user._id}:/api/projects`);
+    await clearCache(`${req.user._id}:/api/projects/${req.params.id}`);
 
     res.json(project);
   } catch (error) {
@@ -249,6 +257,10 @@ router.delete('/:id', async (req, res) => {
     
     // Delete the project
     await Project.findByIdAndDelete(req.params.id);
+
+    // Clear cache
+    await clearCache(`${req.user._id}:/api/projects`);
+    await clearCache(`${req.user._id}:/api/projects/${req.params.id}`);
 
     res.json({ message: 'Project deleted successfully' });
   } catch (error) {

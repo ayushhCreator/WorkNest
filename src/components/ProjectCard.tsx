@@ -6,7 +6,6 @@ import {
   Calendar, 
   Users, 
   MoreVertical, 
-  Edit2, 
   Trash2, 
   ExternalLink 
 } from 'lucide-react';

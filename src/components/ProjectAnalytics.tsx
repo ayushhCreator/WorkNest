@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import { Bar, Doughnut } from 'react-chartjs-2';
 import axios from '../utils/axios';
 import { BarChart3, TrendingUp, Users, Clock } from 'lucide-react';
 
@@ -43,20 +43,20 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projectId }) => {
   const [timeframe, setTimeframe] = useState('30');
 
   useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`/api/analytics/project/${projectId}?timeframe=${timeframe}`);
+        setAnalytics(response.data);
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchAnalytics();
   }, [projectId, timeframe]);
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`/api/analytics/project/${projectId}?timeframe=${timeframe}`);
-      setAnalytics(response.data);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (

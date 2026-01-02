@@ -1,21 +1,16 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useSocket } from '../context/SocketContext';
 import NotificationDropdown from './NotificationDropdown';
 import Logo from '../images/worknest_logo.svg';
 import { 
   LayoutDashboard, 
   User, 
-  LogOut, 
-  Settings,
-  Wifi,
-  WifiOff
+  LogOut 
 } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
-  const { isConnected } = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
 

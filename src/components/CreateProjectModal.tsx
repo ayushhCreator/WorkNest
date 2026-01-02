@@ -4,7 +4,7 @@ import { X, Folder, Palette } from 'lucide-react';
 
 interface CreateProjectModalProps {
   onClose: () => void;
-  onProjectCreated: (project: any) => void;
+  onProjectCreated: (project: { _id: string; title: string; [key: string]: unknown }) => void;
 }
 
 const colors = [
@@ -31,7 +31,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onProj
         color
       });
       onProjectCreated(response.data);
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(error.response?.data?.message || 'Failed to create project');
     } finally {
       setLoading(false);

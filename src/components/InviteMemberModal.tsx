@@ -37,7 +37,7 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
       setTimeout(() => {
         onClose();
       }, 2000);
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(error.response?.data?.message || 'Failed to send invitation');
     } finally {
       setLoading(false);

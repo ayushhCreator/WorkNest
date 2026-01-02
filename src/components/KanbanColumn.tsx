@@ -1,5 +1,5 @@
 import React from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 import TaskCard from './TaskCard';
 import { Plus } from 'lucide-react';

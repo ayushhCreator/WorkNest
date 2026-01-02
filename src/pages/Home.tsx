@@ -94,39 +94,7 @@ const Home: React.FC = () => {
     },
   ];
 
-  // Productivity stats for animation
-  const stats = [
-    { label: "Projects Managed", value: 1200 },
-    { label: "Tasks Completed", value: 8500 },
-    { label: "Teams Collaborating", value: 300 },
-  ];
 
-  // Role-based access demo
-  const roles = [
-    { role: "Owner", color: "bg-blue-600", desc: "Full control, manage members, delete project" },
-    { role: "Admin", color: "bg-green-500", desc: "Manage project, tasks, members" },
-    { role: "Member", color: "bg-yellow-500", desc: "Create/edit tasks, comments, attachments" },
-    { role: "Viewer", color: "bg-gray-400", desc: "Read-only access" },
-  ];
-
-  // Testimonials
-  const testimonials = [
-    {
-      name: "Priya S.",
-      company: "TechFlow",
-      text: "WorkNest transformed our team's productivity. The real-time Kanban board and analytics are game changers!"
-    },
-    {
-      name: "Rahul M.",
-      company: "StartupHub",
-      text: "Inviting my team and managing tasks has never been easier. Highly recommend for remote teams!"
-    },
-    {
-      name: "Aisha K.",
-      company: "DesignNest",
-      text: "The role-based access and notifications keep everyone in sync. Love the UI and features!"
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">

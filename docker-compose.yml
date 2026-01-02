@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017/worknest
+      - REDIS_URI=redis://redis:6379
+      - CLIENT_URL=http://localhost:5173
+      - REFRESH_TOKEN_SECRET=ea7a3547bf8c8805e8df9aa74d20d393d870666e785133c2eccb38709894ff39
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    volumes:
+      - .:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mongo-data:
+  redis-data:
+
+networks:
+  default:
+    driver: bridge

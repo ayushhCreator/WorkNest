@@ -3,8 +3,13 @@ import AuditLog from '../models/AuditLog.js';
 // Function to create an audit log entry
 export const createAuditLog = async (req, action, resourceType, resourceId, actionData = {}) => {
   try {
+    const userId = req.user ? req.user._id : (actionData.responseBody?.user?.id || null);
+    
+    // If no user identified and request failed, log as SYSTEM or ANONYMOUS
+    // But if success and no user, it might be a public action
+    
     const log = new AuditLog({
-      userId: req.user._id,
+      userId: userId,
       action,
       resourceType,
       resourceId,
@@ -27,8 +32,10 @@ export const createAuditLog = async (req, action, resourceType, resourceId, acti
 // Function to create an audit log entry for failed operations
 export const createAuditLogError = async (req, action, resourceType, resourceId, error, actionData = {}) => {
   try {
+    const userId = req.user ? req.user._id : null;
+
     const log = new AuditLog({
-      userId: req.user._id,
+      userId: userId,
       action,
       resourceType,
       resourceId,

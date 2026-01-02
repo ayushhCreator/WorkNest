@@ -54,41 +54,41 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ projects }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchTaskStats = async () => {
+      try {
+        setLoading(true);
+        const responses = await Promise.all(
+          projects.map((project) => axios.get(`/api/tasks/project/${project._id}`))
+        );
+  
+        let total = 0,
+          todo = 0,
+          inprogress = 0,
+          done = 0;
+        const perProject: Record<string, number> = {};
+  
+        responses.forEach((res, index) => {
+          const tasks: Task[] = res.data.tasks || res.data;
+          total += tasks.length;
+          perProject[projects[index].title] = tasks.length;
+  
+          tasks.forEach((task) => {
+            if (task.status === 'todo') todo++;
+            else if (task.status === 'inprogress') inprogress++;
+            else if (task.status === 'done') done++;
+          });
+        });
+  
+        setTaskStats({ total, todo, inprogress, done, perProject });
+      } catch (error) {
+        console.error('Error fetching task stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchTaskStats();
   }, [projects]);
-
-  const fetchTaskStats = async () => {
-    try {
-      setLoading(true);
-      const responses = await Promise.all(
-        projects.map((project) => axios.get(`/api/tasks/project/${project._id}`))
-      );
-
-      let total = 0,
-        todo = 0,
-        inprogress = 0,
-        done = 0;
-      const perProject: Record<string, number> = {};
-
-      responses.forEach((res, index) => {
-        const tasks: Task[] = res.data.tasks || res.data;
-        total += tasks.length;
-        perProject[projects[index].title] = tasks.length;
-
-        tasks.forEach((task) => {
-          if (task.status === 'todo') todo++;
-          else if (task.status === 'inprogress') inprogress++;
-          else if (task.status === 'done') done++;
-        });
-      });
-
-      setTaskStats({ total, todo, inprogress, done, perProject });
-    } catch (error) {
-      console.error('Error fetching task stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const doughnutData = {
     labels: ['To Do', 'In Progress', 'Done'],

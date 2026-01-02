@@ -1,0 +1,46 @@
+name: WorkNest CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+        
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install Client Dependencies
+      run: npm ci
+      
+    - name: Install Server Dependencies
+      working-directory: ./server
+      run: npm ci
+      
+    - name: Build and Test Client
+      run: |
+        npm run lint
+        npm run build
+      env:
+        CI: true
+        
+    # Server tests are currently minimal but this sets up the structure
+    # Uncomment when tests are added
+    # - name: Test Server
+    #   working-directory: ./server
+    #   run: npm test
+    #   env:
+    #     CI: true

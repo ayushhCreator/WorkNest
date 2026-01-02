@@ -5,14 +5,12 @@ import { Upload} from 'lucide-react';
 interface FileUploadProps {
   onFileUpload: (file: File) => void;
   loading?: boolean;
-  accept?: string;
   maxSize?: number;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({ 
   onFileUpload, 
   loading = false,
-  accept = 'image/*,.pdf,.doc,.docx,.txt',
   maxSize = 10 * 1024 * 1024 // 10MB
 }) => {
   const onDrop = useCallback((acceptedFiles: File[]) => {

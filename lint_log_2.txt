@@ -1,0 +1,17 @@
+
+> worknest-client@0.0.0 lint
+> eslint .
+
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/components/Navbar.tsx
+  4:10  error  'useSocket' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/context/AuthContext.tsx
+  22:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  70:21  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+
+/home/ayush-raj/Desktop/Project/WorkNest/src/pages/ProjectBoard.tsx
+  121:9  warning  The 'removeDuplicateTasks' function makes the dependencies of useEffect Hook (at line 325) change on every render. To fix this, wrap the definition of 'removeDuplicateTasks' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+✖ 4 problems (2 errors, 2 warnings)
+

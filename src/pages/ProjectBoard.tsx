@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { useSocket } from '../context/SocketContext';
 import axios from '../utils/axios';
 import KanbanColumn from '../components/KanbanColumn';
@@ -9,7 +9,7 @@ import TaskDetailModal from '../components/TaskDetailModal';
 import InviteMemberModal from '../components/InviteMemberModal';
 import TaskFilters from '../components/TaskFilters';
 import ProjectAnalytics from '../components/ProjectAnalytics';
-import { Users, Settings, UserPlus, BarChart3, Activity } from 'lucide-react';
+import { Users, UserPlus, BarChart3, Activity } from 'lucide-react';
 
 interface Task {
   _id: string;
@@ -118,13 +118,13 @@ const ProjectBoard: React.FC = () => {
 
 
   // Helper function to remove duplicates from tasks array
-  const removeDuplicateTasks = (tasksArray: Task[]): Task[] => {
+  const removeDuplicateTasks = useCallback((tasksArray: Task[]): Task[] => {
     const uniqueTasks = new Map<string, Task>();
     tasksArray.forEach(task => {
       uniqueTasks.set(task._id, task);
     });
     return Array.from(uniqueTasks.values());
-  };
+  }, []);
 
   const fetchProject = useCallback(async () => {
     try {
@@ -146,7 +146,7 @@ const ProjectBoard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, removeDuplicateTasks]);
 
   useEffect(() => {
     if (id) {
@@ -211,7 +211,7 @@ const ProjectBoard: React.FC = () => {
         setTasks(prev => prev.filter(t => t._id !== data.taskId));
       });
 
-      socket.on('comment-added', (data: { taskId: string; comment: any }) => {
+      socket.on('comment-added', (data: { taskId: string; comment: Task['comments'][0] }) => {
         setTasks(prev => prev.map(t =>
           t._id === data.taskId
             ? { ...t, comments: [...t.comments, data.comment] }
@@ -322,7 +322,7 @@ const ProjectBoard: React.FC = () => {
         setTasks(uniqueTasks);
       }
     }
-  }, [tasks.length]);
+  }, [tasks.length, tasks, removeDuplicateTasks]);
 
   if (loading) {
     return (
