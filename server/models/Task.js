@@ -10,6 +10,17 @@ const taskSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Rich content in Markdown format
+  content: {
+    type: String,
+    default: ''
+  },
+  // Human-readable ID (e.g. WN-123)
+  taskId: {
+    type: String,
+    required: true,
+    unique: true
+  },
   project: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
@@ -36,6 +47,48 @@ const taskSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Story points for estimation
+  storyPoints: {
+    type: Number,
+    min: 0,
+    max: 21
+  },
+  // Task hierarchy - for subtasks
+  parentTask: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task'
+  },
+  subtasks: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task'
+  }],
+  // Workflow
+  workflow: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Workflow'
+  },
+  // Milestone reference
+  milestone: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Milestone'
+  },
+  // Cycle/Sprint reference
+  cycle: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Cycle'
+  },
+  // Dependencies
+  dependencies: [{
+    taskId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Task'
+    },
+    type: {
+      type: String,
+      enum: ['blocking', 'blocked_by', 'related'],
+      default: 'blocking'
+    }
+  }],
   comments: [{
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -75,6 +128,8 @@ const taskSchema = new mongoose.Schema({
 taskSchema.index({ project: 1, status: 1 });
 taskSchema.index({ assignee: 1 });
 taskSchema.index({ dueDate: 1 });
+taskSchema.index({ taskId: 1 }, { unique: true });
+taskSchema.index({ parentTask: 1 });
 taskSchema.index({ title: 'text', description: 'text' });
 
 export default mongoose.model('Task', taskSchema);

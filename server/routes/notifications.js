@@ -1,5 +1,9 @@
 import express from 'express';
 import Notification from '../models/Notification.js';
+import NotificationPreference from '../models/NotificationPreference.js';
+import User from '../models/User.js';
+import Project from '../models/Project.js';
+import Workspace from '../models/Workspace.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -87,6 +91,90 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
     
     res.json({ message: 'Notification deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get user's notification preferences
+router.get('/preferences', authenticateToken, async (req, res) => {
+  try {
+    let preferences = await NotificationPreference.findOne({ user: req.user._id });
+
+    if (!preferences) {
+      // Create default preferences if they don't exist
+      preferences = new NotificationPreference({
+        user: req.user._id
+      });
+      await preferences.save();
+    }
+
+    res.json(preferences);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update user's notification preferences
+router.put('/preferences', authenticateToken, async (req, res) => {
+  try {
+    const { preferences, general, workspaceSettings, teamSettings } = req.body;
+
+    let notificationPreferences = await NotificationPreference.findOneAndUpdate(
+      { user: req.user._id },
+      {
+        preferences,
+        general,
+        workspaceSettings,
+        teamSettings
+      },
+      { new: true, upsert: true }
+    );
+
+    res.json(notificationPreferences);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get rule-based notifications (notifications based on custom rules)
+router.get('/rules', authenticateToken, async (req, res) => {
+  try {
+    // This would be expanded to include more complex rule systems
+    const userPrefs = await NotificationPreference.findOne({ user: req.user._id });
+
+    res.json({
+      message: 'Rule-based notification system',
+      preferences: userPrefs,
+      rules: [
+        {
+          id: 'assignment-rule',
+          name: 'Task Assignment',
+          description: 'Notify when assigned to a task',
+          conditions: [
+            { type: 'task_assigned', enabled: true }
+          ],
+          actions: [
+            { channel: 'email', enabled: userPrefs?.preferences?.task_assigned?.email || true },
+            { channel: 'push', enabled: userPrefs?.preferences?.task_assigned?.push || true },
+            { channel: 'in_app', enabled: userPrefs?.preferences?.task_assigned?.in_app || true }
+          ]
+        },
+        {
+          id: 'comment-rule',
+          name: 'Task Comments',
+          description: 'Notify when someone comments on your tasks',
+          conditions: [
+            { type: 'task_comment', enabled: true }
+          ],
+          actions: [
+            { channel: 'email', enabled: userPrefs?.preferences?.task_comment?.email || true },
+            { channel: 'push', enabled: userPrefs?.preferences?.task_comment?.push || true },
+            { channel: 'in_app', enabled: userPrefs?.preferences?.task_comment?.in_app || true }
+          ]
+        }
+      ]
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

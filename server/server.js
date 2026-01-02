@@ -2,9 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import passport from 'passport';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/db.js';
+import initializePassport from './config/passport.js';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import taskRoutes from './routes/tasks.js';
@@ -12,8 +14,19 @@ import userRoutes from './routes/users.js';
 import invitationRoutes from './routes/invitations.js';
 import notificationRoutes from './routes/notifications.js';
 import analyticsRoutes from './routes/analytics.js';
+import workspaceRoutes from './routes/workspaces.js';
+import teamRoutes from './routes/teams.js';
+import workflowRoutes from './routes/workflows.js';
+import cycleRoutes from './routes/cycles.js';
+import milestoneRoutes from './routes/milestones.js';
+import githubRoutes from './routes/github.js';
+import slackRoutes from './routes/slack.js';
+import webhookRoutes from './routes/webhooks.js';
+import publicApiRoutes from './routes/publicApi.js';
 import { authenticateToken } from './middleware/auth.js';
+import { auditLogMiddleware } from './utils/auditLogger.js';
 import './jobs/reminderJob.js';
+import './jobs/digestJob.js';
 
 dotenv.config();
 
@@ -69,6 +82,13 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ✅ Initialize Passport for OAuth
+app.use(passport.initialize());
+initializePassport();
+
+// ✅ Initialize audit logging middleware
+app.use(auditLogMiddleware);
+
 // ✅ Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ 
@@ -80,6 +100,15 @@ app.get('/health', (req, res) => {
 
 // ✅ API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/workspaces', authenticateToken, workspaceRoutes);
+app.use('/api/teams', authenticateToken, teamRoutes);
+app.use('/api/workflows', authenticateToken, workflowRoutes);
+app.use('/api/cycles', authenticateToken, cycleRoutes);
+app.use('/api/milestones', authenticateToken, milestoneRoutes);
+app.use('/api/github', authenticateToken, githubRoutes);
+app.use('/api/slack', authenticateToken, slackRoutes);
+app.use('/api/webhooks', authenticateToken, webhookRoutes);
+app.use('/api/public', authenticateToken, publicApiRoutes);
 app.use('/api/projects', authenticateToken, projectRoutes);
 app.use('/api/tasks', authenticateToken, taskRoutes);
 app.use('/api/users', authenticateToken, userRoutes);

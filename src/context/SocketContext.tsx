@@ -27,39 +27,27 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    // Don't initialize socket while auth is still loading
     if (loading) return;
-    
-    // Re-enabled Socket.IO with optimizations for production
-    const enableSocketIO = true;
-    
-    // Clean up existing socket first
-    if (socket) {
-      socket.removeAllListeners();
-      socket.disconnect();
-      setSocket(null);
-      setIsConnected(false);
-    }
-    
-    if (user && enableSocketIO) {
+
+    let newSocket: Socket | null = null;
+
+    if (user) {
       const token = localStorage.getItem('token');
       if (token) {
-        // Get the API URL from environment or default to production
         const apiUrl = import.meta.env.VITE_API_URL || 'https://worknest-backend-ald9.onrender.com';
-        
-        const newSocket = io(apiUrl, {
+        newSocket = io(apiUrl, {
           auth: { token },
-          transports: ['polling', 'websocket'], // Allow both transports
-          upgrade: true, // Allow upgrade to websocket
+          transports: ['polling', 'websocket'],
+          upgrade: true,
           timeout: 30000,
-          forceNew: false, // Don't force new connections
-          reconnection: true, // Enable reconnection
-          reconnectionAttempts: 3, // Limit reconnection attempts
-          reconnectionDelay: 2000 // 2 second delay between attempts
+          forceNew: false,
+          reconnection: true,
+          reconnectionAttempts: 3,
+          reconnectionDelay: 2000
         });
 
         newSocket.on('connect', () => {
-          console.log('Socket connected:', newSocket.id);
+          console.log('Socket connected:', newSocket!.id);
           setIsConnected(true);
         });
 
@@ -71,22 +59,32 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         newSocket.on('connect_error', (error) => {
           console.error('Socket connection error:', error);
           setIsConnected(false);
-          // Disconnect immediately on error to prevent retry spam
-          newSocket.disconnect();
+          newSocket!.disconnect();
         });
 
         setSocket(newSocket);
-
-        return () => {
-          console.log('Cleaning up socket connection');
-          newSocket.removeAllListeners();
-          newSocket.disconnect();
-          setSocket(null);
-          setIsConnected(false);
-        };
+      }
+    } else {
+      // If user is null, disconnect any existing socket
+      if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+        setSocket(null);
+        setIsConnected(false);
       }
     }
-  }, [user.id, loading, socket, user]); // Depend on user ID and loading state
+
+    // Cleanup function
+    return () => {
+      if (newSocket) {
+        console.log('Cleaning up socket connection');
+        newSocket.removeAllListeners();
+        newSocket.disconnect();
+        setSocket(null);
+        setIsConnected(false);
+      }
+    };
+  }, [user, loading]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

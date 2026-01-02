@@ -3,18 +3,19 @@ import Task from '../models/Task.js';
 import Project from '../models/Project.js';
 import { upload, uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js';
 import { io } from '../server.js';
+import { generateTaskId } from '../utils/idGenerator.js';
 
-import { 
-  notifyTaskAssigned, 
-  notifyTaskComment, 
+import {
+  notifyTaskAssigned,
+  notifyTaskComment,
   notifyTaskStatusChanged,
-  createNotification 
+  createNotification
 } from '../utils/notifications.js';
-import { 
-  logTaskCreated, 
-  logTaskMoved, 
+import {
+  logTaskCreated,
+  logTaskMoved,
   logCommentAdded,
-  logActivity 
+  logActivity
 } from '../utils/activityLogger.js';
 
 const router = express.Router();
@@ -89,7 +90,7 @@ router.get('/project/:projectId', async (req, res) => {
 // Create task
 router.post('/', async (req, res) => {
   try {
-    const { title, description, project, assignee, priority, dueDate, columnId, estimatedHours } = req.body;
+    const { title, description, project, assignee, priority, dueDate, columnId, estimatedHours, storyPoints, parentTask } = req.body;
 
     // Check if project exists and user is a member
     const projectDoc = await Project.findById(project).populate('members.user');
@@ -97,7 +98,7 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    const isMember = projectDoc.members.some(member => 
+    const isMember = projectDoc.members.some(member =>
       member.user._id.toString() === req.user._id.toString()
     );
 
@@ -105,19 +106,40 @@ router.post('/', async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    // Generate a unique task ID
+    const taskId = await generateTaskId(project);
+
+    // If this is a subtask, validate that the parent task exists and belongs to the same project
+    if (parentTask) {
+      const parent = await Task.findById(parentTask);
+      if (!parent || parent.project.toString() !== project.toString()) {
+        return res.status(400).json({ message: 'Parent task does not exist in this project' });
+      }
+    }
+
     const task = new Task({
       title,
       description,
+      taskId,
       project,
       assignee,
       priority,
       dueDate,
       columnId,
-      estimatedHours
+      estimatedHours,
+      storyPoints,
+      parentTask
     });
 
     await task.save();
     await task.populate('assignee', 'name email');
+
+    // If this is a subtask, add it to the parent task's subtasks array
+    if (parentTask) {
+      await Task.findByIdAndUpdate(parentTask, {
+        $push: { subtasks: task._id }
+      });
+    }
 
     // Log activity
     await logTaskCreated(task, req.user);
@@ -139,14 +161,14 @@ router.post('/', async (req, res) => {
 // Update task
 router.put('/:id', async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findById(req.params.id).populate('dependencies.taskId');
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
     }
 
     // Check if user is project member
     const project = await Project.findById(task.project).populate('members.user');
-    const isMember = project.members.some(member => 
+    const isMember = project.members.some(member =>
       member.user._id.toString() === req.user._id.toString()
     );
 
@@ -156,6 +178,20 @@ router.put('/:id', async (req, res) => {
 
     const oldStatus = task.status;
     const oldAssignee = task.assignee;
+
+    // Check if trying to move a task to 'done' but it has blocking dependencies that are not done
+    if (req.body.status === 'done') {
+      const blockingDependencies = task.dependencies.filter(dep =>
+        dep.type === 'blocking' && dep.taskId.status !== 'done'
+      );
+
+      if (blockingDependencies.length > 0) {
+        return res.status(400).json({
+          message: 'Cannot complete task. Blocking dependencies are not completed',
+          blockingTasks: blockingDependencies.map(dep => dep.taskId.title)
+        });
+      }
+    }
 
     // Update task
     Object.keys(req.body).forEach(key => {
@@ -173,11 +209,12 @@ router.put('/:id', async (req, res) => {
 
     await task.save();
     await task.populate('assignee', 'name email');
+    await task.populate('dependencies.taskId', 'title status');
 
     // Log status change
     if (oldStatus !== task.status) {
       await logTaskMoved(task, req.user, oldStatus, task.status);
-      
+
       // Notify about status change
       if (task.assignee && task.assignee._id.toString() !== req.user._id.toString()) {
         await notifyTaskStatusChanged(task, req.user._id, oldStatus, task.status);
@@ -425,6 +462,126 @@ router.delete('/:id', async (req, res) => {
     io.to(task.project.toString()).emit('task-deleted', { taskId: req.params.id });
 
     res.json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add dependency to task
+router.post('/:id/dependencies', async (req, res) => {
+  try {
+    const { dependentTaskId, type = 'blocking' } = req.body;
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Check if user is project member
+    const project = await Project.findById(task.project).populate('members.user');
+    const isMember = project.members.some(member =>
+      member.user._id.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Verify that the dependent task exists and is in the same project
+    const dependentTask = await Task.findById(dependentTaskId);
+    if (!dependentTask || dependentTask.project.toString() !== task.project.toString()) {
+      return res.status(404).json({ message: 'Dependent task not found in same project' });
+    }
+
+    // Check if dependency already exists
+    const existingDependency = task.dependencies.find(
+      dep => dep.taskId.toString() === dependentTaskId
+    );
+
+    if (existingDependency) {
+      return res.status(400).json({ message: 'Dependency already exists' });
+    }
+
+    // Add dependency
+    task.dependencies.push({
+      taskId: dependentTaskId,
+      type
+    });
+
+    await task.save();
+    await task.populate('dependencies.taskId', 'title status');
+
+    res.status(201).json({
+      message: 'Dependency added successfully',
+      task
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Remove dependency from task
+router.delete('/:id/dependencies/:dependencyId', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Check if user is project member
+    const project = await Project.findById(task.project).populate('members.user');
+    const isMember = project.members.some(member =>
+      member.user._id.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Remove dependency
+    task.dependencies = task.dependencies.filter(
+      dep => dep.taskId.toString() !== req.params.dependencyId
+    );
+
+    await task.save();
+    await task.populate('dependencies.taskId', 'title status');
+
+    res.json({
+      message: 'Dependency removed successfully',
+      task
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get task dependencies
+router.get('/:id/dependencies', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id)
+      .populate('dependencies.taskId', 'title status taskId')
+      .populate('project', 'title');
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Check if user is project member
+    const project = await Project.findById(task.project._id).populate('members.user');
+    const isMember = project.members.some(member =>
+      member.user._id.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    res.json({
+      dependencies: task.dependencies,
+      taskId: task.taskId,
+      title: task.title
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -10,6 +10,15 @@ const projectSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  workspace: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Workspace',
+    required: true
+  },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -61,11 +70,35 @@ const projectSchema = new mongoose.Schema({
       type: Boolean,
       default: true
     }
+  },
+  // GitHub integration
+  githubIntegration: {
+    repoFullName: String,
+    accessToken: String, // Should be encrypted in production
+    connected: {
+      type: Boolean,
+      default: false
+    },
+    connectedAt: Date,
+    webhookId: String // GitHub webhook ID for management
+  },
+  // Slack integration
+  slackIntegration: {
+    token: String, // Should be encrypted in production
+    connected: {
+      type: Boolean,
+      default: false
+    },
+    connectedAt: Date,
+    channelId: String,
+    workspace: String
   }
 }, {
   timestamps: true
 });
 
+projectSchema.index({ workspace: 1 });
+projectSchema.index({ team: 1 });
 projectSchema.index({ 'members.user': 1 });
 projectSchema.index({ owner: 1 });
 
