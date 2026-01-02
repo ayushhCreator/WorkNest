@@ -61,10 +61,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post('/api/auth/login', { email, password });
-      const { token, user } = response.data;
+      const { accessToken, user } = response.data;
       
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      localStorage.setItem('token', accessToken);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       setUser(user);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error && 'response' in error 
@@ -78,10 +78,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (name: string, email: string, password: string) => {
     try {
       const response = await axios.post('/api/auth/register', { name, email, password });
-      const { token, user } = response.data;
+      const { accessToken, user } = response.data;
       
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      localStorage.setItem('token', accessToken);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       setUser(user);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error && 'response' in error 

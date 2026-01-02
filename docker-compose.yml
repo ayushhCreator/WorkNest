@@ -15,7 +15,6 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/worknest
       - REDIS_URI=redis://redis:6379
       - CLIENT_URL=http://localhost:5173
-      - REFRESH_TOKEN_SECRET=ea7a3547bf8c8805e8df9aa74d20d393d870666e785133c2eccb38709894ff39
     depends_on:
       - mongo
       - redis

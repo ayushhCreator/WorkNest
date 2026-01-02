@@ -12,8 +12,7 @@ const projectSchema = new mongoose.Schema({
   },
   workspace: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Workspace',
-    required: true
+    ref: 'Workspace'
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,

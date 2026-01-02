@@ -14,6 +14,12 @@ import {
   Github,
   Twitter,
   Linkedin,
+  Zap,
+  GitBranch,
+  Calendar,
+  Target,
+  Slack,
+  Webhook,
 } from "lucide-react";
 import Logo from "../images/worknest_logo.svg";
 
@@ -29,44 +35,63 @@ const Home: React.FC = () => {
     },
     {
       icon: <Users className="h-8 w-8" />,
-      title: "Team Management",
+      title: "Workspaces & Teams",
       description:
-        "Invite members, assign roles, and collaborate with secure role-based permissions.",
+        "Organize your organization with workspaces, teams, and role-based access control.",
+    },
+    {
+      icon: <Calendar className="h-8 w-8" />,
+      title: "Sprint Cycles",
+      description:
+        "Plan and track sprints with burndown charts, velocity tracking, and automated rollover.",
+    },
+    {
+      icon: <Target className="h-8 w-8" />,
+      title: "Milestones & Roadmaps",
+      description:
+        "Set milestones, track progress, and visualize your project timeline with roadmap views.",
     },
     {
       icon: <BarChart3 className="h-8 w-8" />,
       title: "Advanced Analytics",
       description:
-        "Visualize project progress and team performance with detailed insights and reports.",
+        "Velocity charts, burndown reports, lead time analysis, and team performance metrics.",
     },
     {
-      icon: <FileUp className="h-8 w-8" />,
-      title: "File Attachments",
+      icon: <GitBranch className="h-8 w-8" />,
+      title: "GitHub Integration",
       description:
-        "Upload and manage files seamlessly with secure Cloudinary cloud storage integration.",
+        "Link repositories, sync issues, and automate task updates from commits and PRs.",
     },
     {
-      icon: <Bell className="h-8 w-8" />,
-      title: "Smart Notifications",
+      icon: <Slack className="h-8 w-8" />,
+      title: "Slack Integration",
       description:
-        "Stay on top of deadlines and updates with real-time notifications and reminders.",
+        "Get real-time notifications and updates directly in your Slack channels.",
     },
     {
-      icon: <Shield className="h-8 w-8" />,
-      title: "Role-Based Access",
+      icon: <Webhook className="h-8 w-8" />,
+      title: "Webhooks & API",
       description:
-        "Control permissions with Owner, Admin, Member, and Viewer roles for secure collaboration.",
+        "Build custom integrations with webhooks and a powerful REST API with rate limiting.",
+    },
+    {
+      icon: <Zap className="h-8 w-8" />,
+      title: "Custom Workflows",
+      description:
+        "Design custom task workflows with configurable statuses and transitions.",
     },
   ];
 
   const techStack = [
     "React",
+    "TypeScript",
     "Node.js",
     "Express",
     "MongoDB",
-    "Tailwind CSS",
+    "Redis",
     "Socket.io",
-    "Cloudinary",
+    "Docker",
   ];
 
   const steps = [
@@ -143,7 +168,7 @@ const Home: React.FC = () => {
                 Login
               </Link>
               <Link
-                to="/signup"
+                to="/register"
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
               >
                 Get Started
@@ -194,7 +219,7 @@ const Home: React.FC = () => {
                   Login
                 </Link>
                 <Link
-                  to="/signup"
+                  to="/register"
                   className="block px-3 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-center"
                 >
                   Get Started
