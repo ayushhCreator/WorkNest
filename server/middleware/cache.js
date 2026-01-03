@@ -6,6 +6,11 @@ import redis from '../config/redis.js';
  */
 export const cache = (duration) => {
   return async (req, res, next) => {
+    // Skip if Redis not available
+    if (!redis) {
+      return next();
+    }
+
     // Skip caching for non-GET requests
     if (req.method !== 'GET') {
       return next();
@@ -47,6 +52,8 @@ export const cache = (duration) => {
 };
 
 export const clearCache = async (pattern) => {
+  if (!redis) return;
+  
   try {
     const keys = await redis.keys(`cache:${pattern}*`);
     if (keys.length > 0) {
