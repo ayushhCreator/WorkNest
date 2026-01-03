@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with cache
+RUN npm ci --only=production --silent
 
 # Copy source code
 COPY . .
@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 5000
 
 # Start command
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
