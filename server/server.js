@@ -34,6 +34,9 @@ import './jobs/digestJob.js';
 const app = express();
 const httpServer = createServer(app);
 
+// Trust proxy for Render deployment
+app.set('trust proxy', 1);
+
 // Security & Performance Middleware
 app.use(helmet());
 app.use(compression());

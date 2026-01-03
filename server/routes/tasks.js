@@ -165,8 +165,11 @@ router.post('/', async (req, res) => {
 // Update task
 router.put('/:id', async (req, res) => {
   try {
+    console.log('Updating task:', req.params.id, 'with data:', req.body);
+    
     const task = await Task.findById(req.params.id).populate('dependencies.taskId');
     if (!task) {
+      console.log('Task not found:', req.params.id);
       return res.status(404).json({ message: 'Task not found' });
     }
 
@@ -238,6 +241,7 @@ router.put('/:id', async (req, res) => {
 
     res.json(task);
   } catch (error) {
+    console.error('Task update error:', error);
     res.status(500).json({ message: error.message });
   }
 });
