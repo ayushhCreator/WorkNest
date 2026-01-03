@@ -46,11 +46,12 @@ interface Column {
 interface KanbanColumnProps {
   column: Column;
   tasks: Task[];
-  onCreateTask: () => void;
+  onCreateTask?: () => void;
   onTaskClick: (task: Task) => void;
+  isViewer?: boolean;
 }
 
-const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask, onTaskClick }) => {
+const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask, onTaskClick, isViewer = false }) => {
   const getColumnStyle = (status: string) => {
     switch (status) {
       case 'todo':
@@ -109,14 +110,16 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
           </span>
         </div>
         <div className="flex items-center gap-1">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onCreateTask}
-            className="p-1.5 rounded-lg hover:bg-white/60 transition-colors"
-          >
-            <Plus className="h-4 w-4 text-gray-500" />
-          </motion.button>
+          {!isViewer && onCreateTask && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onCreateTask}
+              className="p-1.5 rounded-lg hover:bg-white/60 transition-colors"
+            >
+              <Plus className="h-4 w-4 text-gray-500" />
+            </motion.button>
+          )}
           <button className="p-1.5 rounded-lg hover:bg-white/60 transition-colors">
             <MoreHorizontal className="h-4 w-4 text-gray-400" />
           </button>
@@ -124,7 +127,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
       </div>
 
       {/* Droppable Area */}
-      <Droppable droppableId={column.status}>
+      <Droppable droppableId={column.status} isDropDisabled={isViewer}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
@@ -142,17 +145,19 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
                 className="flex flex-col items-center justify-center py-8 text-center"
               >
                 <div className="text-gray-400 text-sm">No tasks yet</div>
-                <button
-                  onClick={onCreateTask}
-                  className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  + Add a task
-                </button>
+                {!isViewer && onCreateTask && (
+                  <button
+                    onClick={onCreateTask}
+                    className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    + Add a task
+                  </button>
+                )}
               </motion.div>
             )}
 
             {tasks.map((task, index) => (
-              <Draggable key={task._id} draggableId={String(task._id)} index={index}>
+              <Draggable key={task._id} draggableId={String(task._id)} index={index} isDragDisabled={isViewer}>
                 {(provided, snapshot) => (
                   <motion.div
                     ref={provided.innerRef}
@@ -163,7 +168,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
                     transition={{ delay: index * 0.05 }}
                     className={`transition-transform ${
                       snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl z-50' : ''
-                    }`}
+                    } ${isViewer ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
                   >
                     <TaskCard task={task} onClick={() => onTaskClick(task)} />
                   </motion.div>
@@ -176,6 +181,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
       </Droppable>
 
       {/* Quick Add Button */}
+      {!isViewer && onCreateTask && (
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -185,6 +191,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
         <Plus className="h-4 w-4" />
         Add Task
       </motion.button>
+      )}
     </motion.div>
   );
 };

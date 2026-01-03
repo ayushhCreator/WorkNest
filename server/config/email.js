@@ -2,14 +2,16 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Brevo (Sendinblue) SMTP Transporter
+// Email Configuration
+// Supports both standard SMTP (like Brevo) and Gmail
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,              // smtp-relay.brevo.com
+  host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
-  secure: false,                            // false for port 587
+  secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+  service: process.env.SMTP_HOST?.includes('gmail') ? 'gmail' : undefined,
   auth: {
-    user: process.env.SMTP_USER,            // Brevo login email (e.g., 924151001@smtp-brevo.com)
-    pass: process.env.SMTP_PASS             // Brevo SMTP key
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
 });
 
@@ -20,7 +22,8 @@ console.log("SMTP_PASS:", process.env.SMTP_PASS);
  * Send project invitation email
  */
 export const sendInvitationEmail = async (email, inviterName, projectTitle, inviteToken, role = 'member') => {
-  const inviteUrl = `${process.env.CLIENT_URL}/accept-invite/${inviteToken}`;
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const inviteUrl = `${clientUrl}/accept-invite/${inviteToken}`;
   
   // Role descriptions for email
   const roleDescriptions = {
@@ -73,7 +76,7 @@ export const sendReminderEmail = async (email, userName, taskTitle, projectTitle
         <p>This is a reminder that your task <strong>"${taskTitle}"</strong> in project <strong>"${projectTitle}"</strong> is due soon.</p>
         <p><strong>Due Date:</strong> ${formattedDate}</p>
         <p>Please make sure to complete it on time or update the due date if needed.</p>
-        <a href="${process.env.CLIENT_URL}/dashboard" style="display: inline-block; background-color: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">View Task</a>
+        <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard" style="display: inline-block; background-color: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">View Task</a>
       </div>
     `
   };

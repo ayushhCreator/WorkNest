@@ -11,6 +11,8 @@ import AcceptInvite from './pages/AcceptInvite';
 import Dashboard from './pages/Dashboard';
 import ProjectBoard from './pages/ProjectBoard';
 import Profile from './pages/Profile';
+import ProjectSettings from './pages/ProjectSettings';
+import DesignDemo from './pages/DesignDemo';
 
 
 function App() {
@@ -43,10 +45,24 @@ function App() {
                   </Layout>
                 </ProtectedRoute>
               } />
+              <Route path="/project/:id/settings" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectSettings />
+                  </Layout>
+                </ProtectedRoute>
+              } />
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <Layout>
                     <Profile />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/design" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <DesignDemo />
                   </Layout>
                 </ProtectedRoute>
               } />

@@ -10,7 +10,8 @@ import {
   LogOut,
   ChevronDown,
   Settings,
-  HelpCircle
+  HelpCircle,
+  Palette
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -56,6 +57,17 @@ const Navbar: React.FC = () => {
                 <LayoutDashboard className="h-4 w-4" />
                 <span>Dashboard</span>
               </Link>
+              <Link
+                to="/design"
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  location.pathname === '/design'
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <Palette className="h-4 w-4" />
+                <span>Design System</span>
+              </Link>
             </div>
           </div>
 
@@ -71,9 +83,17 @@ const Navbar: React.FC = () => {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
-                  {user?.name ? getInitials(user.name) : 'U'}
-                </div>
+                {user?.avatar ? (
+                  <img 
+                    src={user.avatar} 
+                    alt={user.name} 
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
+                    {user?.name ? getInitials(user.name) : 'U'}
+                  </div>
+                )}
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                   <p className="text-xs text-gray-500">{user?.role || 'Member'}</p>
@@ -108,22 +128,6 @@ const Navbar: React.FC = () => {
                       >
                         <User className="h-4 w-4" />
                         <span>Profile</span>
-                      </Link>
-                      <Link
-                        to="/settings"
-                        onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <Settings className="h-4 w-4" />
-                        <span>Settings</span>
-                      </Link>
-                      <Link
-                        to="/help"
-                        onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <HelpCircle className="h-4 w-4" />
-                        <span>Help & Support</span>
                       </Link>
                     </div>
 

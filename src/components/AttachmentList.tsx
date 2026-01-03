@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, File, Image, FileText, X } from 'lucide-react';
+import { Download, File, Image, FileText, X, Eye } from 'lucide-react';
 
 interface Attachment {
   _id: string;
@@ -84,6 +84,15 @@ const AttachmentList: React.FC<AttachmentListProps> = ({
           )}
 
           <div className="flex items-center space-x-1">
+            <a
+              href={attachment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+              title="View"
+            >
+              <Eye className="h-4 w-4" />
+            </a>
             <a
               href={attachment.url}
               target="_blank"

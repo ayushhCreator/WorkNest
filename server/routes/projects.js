@@ -55,7 +55,7 @@ router.post('/', async (req, res) => {
       description,
       owner: req.user._id,
       color: color || '#3B82F6',
-      members: [{ user: req.user._id, role: 'owner' }],
+      members: [{ user: req.user._id, role: 'admin' }],
       columns: [
         { id: uuidv4(), title: 'To Do', taskIds: [] },
         { id: uuidv4(), title: 'In Progress', taskIds: [] },
@@ -103,6 +103,19 @@ router.get('/:id', cache(300), async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    // Auto-migrate 'owner' role to 'admin'
+    let projectModified = false;
+    project.members.forEach(member => {
+      if (member.role === 'owner') {
+        member.role = 'admin';
+        projectModified = true;
+      }
+    });
+
+    if (projectModified) {
+      await project.save();
+    }
+
     // Get recent activity logs
     const activityLogs = await ActivityLog.find({ project: req.params.id })
       .populate('user', 'name email')
@@ -118,7 +131,7 @@ router.get('/:id', cache(300), async (req, res) => {
 // Update project
 router.put('/:id', async (req, res) => {
   try {
-    const { title, description, color, status } = req.body;
+    const { title, description, color, status, settings, githubIntegration, slackIntegration } = req.body;
     
     const project = await Project.findById(req.params.id);
     if (!project) {
@@ -130,7 +143,7 @@ router.put('/:id', async (req, res) => {
       member.user.toString() === req.user._id.toString()
     );
     
-    if (!userMember || !['owner', 'admin'].includes(userMember.role)) {
+    if (!userMember || userMember.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -138,6 +151,29 @@ router.put('/:id', async (req, res) => {
     if (description !== undefined) project.description = description;
     if (color) project.color = color;
     if (status) project.status = status;
+
+    // Update settings
+    if (settings) {
+      project.settings = { ...project.settings, ...settings };
+    }
+
+    // Update Integrations
+    if (githubIntegration) {
+      project.githubIntegration = { ...project.githubIntegration, ...githubIntegration };
+      // Auto-set connected if token/repo present? 
+      if (githubIntegration.accessToken && githubIntegration.repoFullName) {
+        project.githubIntegration.connected = true;
+        project.githubIntegration.connectedAt = new Date();
+      }
+    }
+
+    if (slackIntegration) {
+      project.slackIntegration = { ...project.slackIntegration, ...slackIntegration };
+      if (slackIntegration.token && slackIntegration.channelId) {
+        project.slackIntegration.connected = true;
+        project.slackIntegration.connectedAt = new Date();
+      }
+    }
 
     await project.save();
     await project.populate('owner', 'name email');
@@ -168,8 +204,8 @@ router.put('/:id/members/:userId/role', async (req, res) => {
       member.user.toString() === req.user._id.toString()
     );
     
-    if (!userMember || userMember.role !== 'owner') {
-      return res.status(403).json({ message: 'Only project owners can change roles' });
+    if (!userMember || userMember.role !== 'admin') {
+      return res.status(403).json({ message: 'Only project admins can change roles' });
     }
 
     // Find and update member role
@@ -181,12 +217,11 @@ router.put('/:id/members/:userId/role', async (req, res) => {
       return res.status(404).json({ message: 'Member not found' });
     }
 
-    // Prevent changing owner role
-    if (memberToUpdate.role === 'owner') {
-      return res.status(400).json({ message: 'Cannot change owner role' });
-    }
-
-    memberToUpdate.role = role;
+    // Prevent changing own role if you are the only admin? (Optional safety)
+    // For now, removing the "Cannot change owner role" block entirely or adapting it.
+    // If we removed Owner role, we don't need to protect it.
+    
+    // memberToUpdate.role = role;
     await project.save();
     await project.populate('members.user', 'name email');
 
@@ -209,17 +244,16 @@ router.delete('/:id/members/:userId', async (req, res) => {
       member.user.toString() === req.user._id.toString()
     );
     
-    if (!userMember || !['owner', 'admin'].includes(userMember.role)) {
+    if (!userMember || userMember.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    // Prevent removing owner
-    const memberToRemove = project.members.find(member => 
-      member.user.toString() === req.params.userId
-    );
-    
-    if (memberToRemove && memberToRemove.role === 'owner') {
-      return res.status(400).json({ message: 'Cannot remove project owner' });
+    // Prevent removing owner (we can check project.owner field, or just allow admins to remove anyone except maybe themselves?)
+    // Let's remove the "Cannot remove project owner" check if role is 'owner' because 'owner' role is gone.
+    // But maybe protecting the Creator is still good?
+    // Using project.owner check:
+    if (req.params.userId === project.owner.toString()) {
+       return res.status(400).json({ message: 'Cannot remove project creator' });
     }
 
     // Remove member
@@ -245,8 +279,13 @@ router.delete('/:id', async (req, res) => {
     }
 
     // Check if user is project owner
-    if (project.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Only project owner can delete the project' });
+    // Check if user is project admin
+    const userMember = project.members.find(member => 
+      member.user.toString() === req.user._id.toString()
+    );
+
+    if (!userMember || userMember.role !== 'admin') {
+      return res.status(403).json({ message: 'Only project admins can delete the project' });
     }
 
     // Delete all tasks associated with the project

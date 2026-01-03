@@ -38,11 +38,13 @@ const httpServer = createServer(app);
 app.use(helmet());
 app.use(compression());
 
-// Rate Limiting
+// Rate Limiting - more lenient in development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again after 15 minutes'
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // Higher limit for development
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true, // Return rate limit info in headers
+  legacyHeaders: false,
 });
 app.use('/api', limiter);
 

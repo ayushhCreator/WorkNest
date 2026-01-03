@@ -97,7 +97,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       <div className="flex items-center justify-between">
         {/* Left side - Assignee */}
         <div className="flex items-center gap-2">
-          {task.assignee ? (
+          {task.assignee && task.assignee.name ? (
             <div className="flex items-center gap-1.5">
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
                 {task.assignee.name.charAt(0).toUpperCase()}

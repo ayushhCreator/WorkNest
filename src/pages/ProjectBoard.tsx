@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { useSocket } from '../context/SocketContext';
+import { useAuth } from '../context/AuthContext';
 import axios from '../utils/axios';
 import KanbanColumn from '../components/KanbanColumn';
 import CreateTaskModal from '../components/CreateTaskModal';
@@ -9,7 +10,8 @@ import TaskDetailModal from '../components/TaskDetailModal';
 import InviteMemberModal from '../components/InviteMemberModal';
 import TaskFilters from '../components/TaskFilters';
 import ProjectAnalytics from '../components/ProjectAnalytics';
-import { Users, UserPlus, BarChart3, Activity } from 'lucide-react';
+import { Users, UserPlus, BarChart3, Activity, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Task {
   _id: string;
@@ -78,10 +80,15 @@ interface Project {
     description: string;
     createdAt: string;
   }>;
+  settings?: {
+    allowComments: boolean;
+    allowFileUploads: boolean;
+  };
 }
 
 const ProjectBoard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
@@ -241,6 +248,7 @@ const ProjectBoard: React.FC = () => {
 
     const { source, destination, draggableId } = result;
 
+    // If dropped in same place
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
@@ -252,22 +260,36 @@ const ProjectBoard: React.FC = () => {
     if (!task) return;
 
     const newStatus = destination.droppableId;
+    const oldStatus = task.status;
+    const oldColumnId = task.columnId;
+
+    // 1. Optimistic Update: Update UI immediately
+    setTasks(prev =>
+      prev.map(t =>
+        t._id === draggableId
+          ? { ...t, status: newStatus, columnId: newStatus }
+          : t
+      )
+    );
 
     try {
+      // 2. Call API in background
       await axios.put(`/api/tasks/${draggableId}`, {
         status: newStatus,
         columnId: newStatus
       });
-
+    } catch (error) {
+      console.error('Error updating task:', error);
+      
+      // 3. Rollback on error
       setTasks(prev =>
         prev.map(t =>
           t._id === draggableId
-            ? { ...t, status: newStatus, columnId: newStatus }
+            ? { ...t, status: oldStatus, columnId: oldColumnId }
             : t
         )
       );
-    } catch (error) {
-      console.error('Error updating task:', error);
+      // Optional: Show error toast
     }
   };
 
@@ -298,6 +320,7 @@ const ProjectBoard: React.FC = () => {
   };
 
   const handleTaskUpdated = (updatedTask: Task) => {
+    console.log('📝 ProjectBoard: handleTaskUpdated called', updatedTask);
     setTasks(prev => prev.map(t => t._id === updatedTask._id ? updatedTask : t));
   };
 
@@ -307,11 +330,38 @@ const ProjectBoard: React.FC = () => {
   };
 
   const canInviteMembers = () => {
-    if (!project) return false;
-    const userMember = project.members.find(member =>
-      ['owner', 'admin'].includes(member.role)
+    if (!project || !user) return false;
+    const userMember = project.members.find(member => 
+      member.user._id === user.id || member.user._id === user.id // Check ID match
+      // Note: user.id from AuthContext might be string, member.user._id might be string.
     );
-    return !!userMember;
+    // Actually, let's look at user object structure in AuthContext.
+    // user.id
+    // member.user might be populated object OR id string.
+    // In ProjectBoard fetch: .populate('members.user', 'name email')
+    // So member.user is an object with _id.
+    
+    // Let's rely on robust check:
+    const memberRecord = project.members.find(m => m.user._id === user.id);
+    return memberRecord && ['admin', 'member'].includes(memberRecord.role);
+  };
+
+  const isAdmin = () => {
+    if (!project || !user) return false;
+    const memberRecord = project.members.find(m => m.user._id === user.id);
+    return memberRecord && memberRecord.role === 'admin';
+  };
+
+  const canCreateTask = () => {
+    if (!project || !user) return false;
+    const memberRecord = project.members.find(m => m.user._id === user.id);
+    return memberRecord && ['admin', 'member'].includes(memberRecord.role);
+  };
+  
+  const isViewer = () => {
+     if (!project || !user) return false;
+     const memberRecord = project.members.find(m => m.user._id === user.id);
+     return memberRecord?.role === 'viewer';
   };
 
   // Clean up tasks on component mount to remove any existing duplicates
@@ -323,6 +373,21 @@ const ProjectBoard: React.FC = () => {
       }
     }
   }, [tasks.length, tasks, removeDuplicateTasks]);
+
+  // Keep selectedTask in sync with tasks state
+  useEffect(() => {
+    if (selectedTask) {
+      const updatedTask = tasks.find(t => t._id === selectedTask._id);
+      if (updatedTask && JSON.stringify(updatedTask) !== JSON.stringify(selectedTask)) {
+        console.log('🔄 ProjectBoard: Syncing selectedTask', {
+          current: selectedTask,
+          updated: updatedTask,
+          diff_attachments: updatedTask.attachments.length !== selectedTask.attachments.length
+        });
+        setSelectedTask(updatedTask);
+      }
+    }
+  }, [tasks, selectedTask]);
 
   if (loading) {
     return (
@@ -348,7 +413,8 @@ const ProjectBoard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="h-[calc(100vh-6rem)] flex flex-col">
+      <div className="space-y-6 mb-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <div
@@ -372,14 +438,48 @@ const ProjectBoard: React.FC = () => {
             </button>
 
             {showMemberDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                <div className="p-2 max-h-60 overflow-y-auto">
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="p-2 max-h-80 overflow-y-auto custom-scrollbar">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Project Members</h3>
                   {project.members.length > 0 ? (
-                    project.members.map(({ user, role }) => (
-                      <div key={user._id} className="p-2 hover:bg-gray-100 rounded">
-                        <p className="text-sm font-medium text-gray-800">{user.name}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                        <p className="text-xs italic text-gray-400">{role}</p>
+                    project.members.map(({ user: memberUser, role }) => (
+                      <div key={memberUser._id} className="p-2 hover:bg-gray-50 rounded flex items-center justify-between group">
+                        <div className="flex-1 min-w-0 mr-2">
+                          <p className="text-sm font-medium text-gray-800 truncate">{memberUser.name}</p>
+                          <p className="text-xs text-gray-500 truncate">{memberUser.email}</p>
+                        </div>
+                        
+                        {/* Role Management */}
+                        {(user?.id && project.members.find(m => m.user._id === user.id)?.role.match(/^(owner|admin)$/)) && memberUser._id !== user.id && role !== 'owner' ? (
+                          <select
+                            value={role}
+                            onChange={async (e) => {
+                              try {
+                                await axios.put(`/api/projects/${id}/members/${memberUser._id}/role`, {
+                                  role: e.target.value
+                                });
+                                fetchProject(); // Refresh
+                              } catch (err) {
+                                console.error('Failed to update role', err);
+                                alert('Failed to update role');
+                              }
+                            }}
+                            className="text-xs border border-gray-200 rounded px-1 py-0.5 bg-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                          >
+                            <option value="member">Member</option>
+                            <option value="viewer">Viewer</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        ) : (
+                          <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
+                            role === 'owner' ? 'bg-purple-100 text-purple-700' :
+                            role === 'admin' ? 'bg-blue-100 text-blue-700' :
+                            role === 'viewer' ? 'bg-gray-100 text-gray-700' :
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            {role}
+                          </span>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -390,15 +490,27 @@ const ProjectBoard: React.FC = () => {
             )}
           </div>
 
-          {canInviteMembers() && (
-            <button
-              onClick={() => setShowInviteModal(true)}
-              className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <UserPlus className="h-4 w-4" />
-              {/* <span>Invite</span> */}
-            </button>
-          )}
+            {/* Settings Button */}
+            {isAdmin() && (
+              <Link
+                to={`/project/${project._id}/settings`}
+                className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            )}
+
+            {canInviteMembers() && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={loading}
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>Invite</span>
+              </button>
+            )}
           {/* <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
             <Settings className="h-5 w-5 text-gray-500" />
           </button> */}
@@ -462,8 +574,9 @@ const ProjectBoard: React.FC = () => {
                   key={column.id}
                   column={column}
                   tasks={filteredTasks.filter(task => task.status === column.status)}
-                  onCreateTask={() => handleCreateTask(column.id)}
+                  onCreateTask={canCreateTask() ? () => handleCreateTask(column.id) : undefined}
                   onTaskClick={handleTaskClick}
+                  isViewer={isViewer()}
                 />
               ))}
             </div>
@@ -498,6 +611,9 @@ const ProjectBoard: React.FC = () => {
         </div>
       )}
 
+      </div>
+
+
       {showCreateModal && (
         <CreateTaskModal
           projectId={id!}
@@ -513,7 +629,6 @@ const ProjectBoard: React.FC = () => {
           projectId={id!}
           onClose={() => setShowInviteModal(false)}
           onInviteSent={() => {
-            setShowInviteModal(false);
             fetchProject();
           }}
         />
@@ -526,6 +641,7 @@ const ProjectBoard: React.FC = () => {
           onClose={() => setSelectedTask(null)}
           onTaskUpdated={handleTaskUpdated}
           onTaskDeleted={handleTaskDeleted}
+          settings={project.settings}
         />
       )}
     </div>

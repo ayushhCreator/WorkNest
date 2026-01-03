@@ -179,17 +179,27 @@ const StatCard = ({
   label: string;
   value: number;
   icon: React.ReactNode;
-  color: string;
-}) => (
-  <div className="bg-white rounded-xl p-6 border border-gray-200">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-600">{label}</p>
-        <p className={`text-2xl font-bold text-${color}-600`}>{value}</p>
+  color: 'blue' | 'gray' | 'green' | 'purple' | 'orange';
+}) => {
+  const colorStyles = {
+    blue: { text: 'text-blue-600', bg: 'bg-blue-100' },
+    gray: { text: 'text-gray-600', bg: 'bg-gray-100' },
+    green: { text: 'text-green-600', bg: 'bg-green-100' },
+    purple: { text: 'text-purple-600', bg: 'bg-purple-100' },
+    orange: { text: 'text-orange-600', bg: 'bg-orange-100' },
+  };
+
+  return (
+    <div className="bg-white rounded-xl p-6 border border-gray-200">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{label}</p>
+          <p className={`text-2xl font-bold ${colorStyles[color].text}`}>{value}</p>
+        </div>
+        <div className={`p-3 ${colorStyles[color].bg} rounded-lg`}>{icon}</div>
       </div>
-      <div className={`p-3 bg-${color}-100 rounded-lg`}>{icon}</div>
     </div>
-  </div>
-);
+  );
+};
 
 export default DashboardStats;

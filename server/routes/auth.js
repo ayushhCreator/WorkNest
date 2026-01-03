@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
 
     // Generate tokens
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRY || '15m'
+      expiresIn: process.env.JWT_EXPIRY || '24h'
     });
     const refreshToken = await RefreshToken.generateRefreshToken(
       user._id,
@@ -65,7 +65,7 @@ router.post('/login', async (req, res) => {
 
     // Generate tokens
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRY || '15m'
+      expiresIn: process.env.JWT_EXPIRY || '24h'
     });
     const refreshToken = await RefreshToken.generateRefreshToken(
       user._id,
@@ -100,7 +100,7 @@ router.get('/google/callback',
 
       // Generate tokens
       const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRY || '15m'
+        expiresIn: process.env.JWT_EXPIRY || '24h'
       });
       const refreshToken = await RefreshToken.generateRefreshToken(
         user._id,
@@ -133,7 +133,7 @@ router.get('/github/callback',
 
       // Generate tokens
       const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRY || '15m'
+        expiresIn: process.env.JWT_EXPIRY || '24h'
       });
       const refreshToken = await RefreshToken.generateRefreshToken(
         user._id,
@@ -169,7 +169,7 @@ router.post('/refresh', async (req, res) => {
     const newAccessToken = jwt.sign(
       { id: refreshTokenDoc.userId },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRY || '15m' }
+      { expiresIn: process.env.JWT_EXPIRY || '24h' }
     );
 
     // Generate new refresh token (rolling refresh)

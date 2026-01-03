@@ -67,6 +67,10 @@ interface TaskDetailModalProps {
   onClose: () => void;
   onTaskUpdated: (task: Task) => void;
   onTaskDeleted: (taskId: string) => void;
+  settings?: {
+    allowComments: boolean;
+    allowFileUploads: boolean;
+  };
 }
 
 const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ 
@@ -74,7 +78,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   members, 
   onClose, 
   onTaskUpdated, 
-  onTaskDeleted 
+  onTaskDeleted,
+  settings
 }) => {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
@@ -86,8 +91,16 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [commentLoading, setCommentLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [showAttachments, setShowAttachments] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSuccess, setUploadSuccess] = useState('');
+  const [uploadError, setUploadError] = useState('');
+  const [showAttachments, setShowAttachments] = useState(true);
   const { user } = useAuth();
+  
+  const currentUserRole = members.find(m => m.user._id === user?.id)?.role;
+  const isAdmin = currentUserRole === 'admin';
+  const canUpload = isAdmin || (settings?.allowFileUploads ?? true);
+  const canComment = isAdmin || (settings?.allowComments ?? true);
 
   const handleUpdate = async () => {
     setLoading(true);
@@ -142,19 +155,45 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
   const handleFileUpload = async (file: File) => {
     setUploadLoading(true);
+    setUploadError('');
+    setUploadProgress(0);
+    setUploadSuccess('');
+
     try {
       const formData = new FormData();
       formData.append('file', file);
+
 
       const response = await axios.post(`/api/tasks/${task._id}/attachments`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        },
       });
       
+      console.log('📤 TopDetailModal: File Upload Success', response.data);
+      setUploadSuccess('File uploaded successfully');
+      setUploadProgress(100);
       onTaskUpdated(response.data);
-    } catch (error) {
-      console.error('Error uploading file:', error);
+      
+      // Auto clear success message
+      setTimeout(() => {
+        setUploadSuccess('');
+        setUploadProgress(0);
+      }, 3000);
+
+    } catch (error: unknown) {
+      console.error('❌ TopDetailModal: Error uploading file:', error);
+      const errMsg = error instanceof Error && 'response' in error 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ? (error as any).response?.data?.error || (error as any).response?.data?.message
+        : 'Failed to upload file';
+      setUploadError(errMsg || 'Failed to upload file');
     } finally {
       setUploadLoading(false);
     }
@@ -162,10 +201,12 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
   const handleDeleteAttachment = async (attachmentId: string) => {
     try {
+      console.log('🗑️ TopDetailModal: Deleting attachment', attachmentId);
       const response = await axios.delete(`/api/tasks/${task._id}/attachments/${attachmentId}`);
+      console.log('✅ TopDetailModal: Delete Success', response.data);
       onTaskUpdated(response.data);
     } catch (error) {
-      console.error('Error deleting attachment:', error);
+      console.error('❌ TopDetailModal: Error deleting attachment:', error);
     }
   };
 
@@ -363,10 +404,18 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
             {showAttachments && (
               <div className="space-y-4">
-                {canEdit() && (
+                {uploadError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-700 text-sm">{uploadError}</p>
+                  </div>
+                )}
+                
+                {canEdit() && canUpload && (
                   <FileUpload
                     onFileUpload={handleFileUpload}
                     loading={uploadLoading}
+                    progress={uploadProgress}
+                    success={uploadSuccess}
                   />
                 )}
                 
@@ -386,6 +435,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               <span>Comments ({task.comments.length})</span>
             </h4>
 
+            {canComment && (
             <form onSubmit={handleAddComment} className="mb-4">
               <div className="flex space-x-3">
                 <input
@@ -405,6 +455,10 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 </button>
               </div>
             </form>
+            )}
+            {!canComment && (
+              <p className="text-sm text-gray-500 italic mb-4">Comments are disabled for this project.</p>
+            )}
 
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {task.comments.map((comment) => (

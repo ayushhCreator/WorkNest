@@ -39,8 +39,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onProjectDeleted }) 
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const isOwner = project.members.find(
-    member => member.user._id === user?.id && (member.role === 'admin' || member.role === 'owner')
+  const isAdmin = project.members.find(
+    member => member.user._id === user?.id && member.role === 'admin'
   );
 
   const taskCount = project.tasks?.length || 0;
@@ -79,7 +79,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onProjectDeleted }) 
             <h3 className="font-semibold text-lg text-gray-900 truncate">{project.title}</h3>
           </div>
           
-          {isOwner && (
+          {isAdmin && (
             <div className="relative ml-2">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}

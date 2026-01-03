@@ -25,7 +25,7 @@ router.post("/", authenticateToken, async (req, res) => {
     const userMember = project.members.find(
       (member) => member.user.toString() === req.user._id.toString()
     );
-    if (!userMember || !["owner", "admin"].includes(userMember.role)) {
+    if (!userMember || !["admin", "member"].includes(userMember.role)) {
       return res.status(403).json({ message: "Insufficient permissions" });
     }
 
@@ -69,6 +69,7 @@ router.post("/", authenticateToken, async (req, res) => {
 
     // Send or Resend the email
     try {
+      console.log(`📧 Sending invitation email to ${email}...`);
       await sendInvitationEmail(
         email,
         req.user.name,
@@ -76,8 +77,9 @@ router.post("/", authenticateToken, async (req, res) => {
         token,
         role
       );
+      console.log(`✅ Invitation email sent successfully to ${email}`);
     } catch (emailError) {
-      console.error("Failed to send invitation email:", emailError);
+      console.error("❌ Failed to send invitation email:", emailError);
       // It’s fine if email fails — you still have the DB entry.
     }
 
@@ -89,6 +91,48 @@ router.post("/", authenticateToken, async (req, res) => {
     res.status(200).json({ message: "Invitation sent or resent successfully" });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 📌 Revoke/Delete invitation
+router.delete("/:id", authenticateToken, async (req, res) => {
+  try {
+    const invitation = await Invitation.findById(req.params.id);
+    if (!invitation) {
+      return res.status(404).json({ message: "Invitation not found" });
+    }
+
+    // Check permissions (must be admin/owner of the project)
+    const project = await Project.findById(invitation.project);
+    if (!project) {
+        // If project doesn't exist, we can probably just delete the invite? 
+        // But let's check permission anyway if possible. 
+        // If project missing, maybe just allow delete if token matches? 
+        // Safer to return 404 or just delete it if user is system admin?
+        // Let's assume project exists for now.
+        return res.status(404).json({ message: "Project not found" });
+    }
+
+    const userMember = project.members.find(
+      (member) => member.user.toString() === req.user._id.toString()
+    );
+    
+    // Allow if user is owner/admin OR if the user sent the invite themselves
+    const isAuthorized = 
+        (userMember && ["admin"].includes(userMember.role)) || 
+        invitation.invitedBy.toString() === req.user._id.toString();
+
+    if (!isAuthorized) {
+      return res.status(403).json({ message: "Insufficient permissions to revoke invitation" });
+    }
+
+    await Invitation.findByIdAndDelete(req.params.id);
+    
+    console.log(`🗑️ Invitation revoked for ${invitation.email}`);
+    res.json({ message: "Invitation revoked successfully" });
+  } catch (error) {
+    console.error("Error revoking invitation:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -205,7 +249,8 @@ router.get("/project/:projectId", authenticateToken, async (req, res) => {
     const userMember = project.members.find(
       (member) => member.user.toString() === req.user._id.toString()
     );
-    if (!userMember || !["owner", "admin"].includes(userMember.role)) {
+    // Allow members to view active invitations too
+    if (!userMember || !["admin", "member"].includes(userMember.role)) {
       return res.status(403).json({ message: "Insufficient permissions" });
     }
 

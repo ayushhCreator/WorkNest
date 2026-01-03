@@ -119,7 +119,7 @@ export const createNotification = async (data) => {
     }
 
     // Send email notification if enabled
-    if (userPrefs.email) {
+    if (userPrefs.email && !data.skipEmail) {
       await sendEmailNotification(data.recipient, data);
     }
 
@@ -157,6 +157,7 @@ export const notifyTaskComment = async (task, commenter, projectMembers) => {
       type: 'task_comment',
       title: 'New Comment',
       message: `New comment on task "${task.title}"`,
+      skipEmail: true,
       data: {
         projectId: task.project,
         taskId: task._id

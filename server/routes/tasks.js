@@ -264,6 +264,11 @@ router.post('/:id/attachments', upload.single('file'), async (req, res) => {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
+    // Check Project Settings
+    if (userRole !== 'admin' && project.settings && project.settings.allowFileUploads === false) {
+      return res.status(403).json({ error: 'File uploads are disabled for this project' });
+    }
+
     // Upload file to Cloudinary
     const result = await uploadToCloudinary(req.file.buffer, {
       folder: 'worknest-attachments',
@@ -358,7 +363,7 @@ router.delete('/:id/attachments/:attachmentId', async (req, res) => {
     // Only allow deletion by uploader, task assignee, or project admins/owner
     const canDelete = attachment.uploadedBy.toString() === req.user._id.toString() ||
                      task.assignee?.toString() === req.user._id.toString() ||
-                     ['owner', 'admin'].includes(userRole);
+                     userRole === 'admin';
 
     if (!canDelete) {
       return res.status(403).json({ error: 'Cannot delete this attachment' });
@@ -409,12 +414,16 @@ router.post('/:id/comments', async (req, res) => {
 
     // Check if user is project member
     const project = await Project.findById(task.project).populate('members.user');
-    const isMember = project.members.some(member => 
+    const memberRecord = project.members.find(member => 
       member.user._id.toString() === req.user._id.toString()
     );
 
-    if (!isMember) {
+    if (!memberRecord) {
       return res.status(403).json({ message: 'Access denied' });
+    }
+
+    if (memberRecord.role !== 'admin' && project.settings && project.settings.allowComments === false) {
+      return res.status(403).json({ message: 'Comments are disabled for this project' });
     }
 
     const comment = {

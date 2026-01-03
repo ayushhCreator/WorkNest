@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from 'chart.js';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import axios from '../utils/axios';
-import { BarChart3, TrendingUp, Users, Clock } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Clock, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
 interface ProjectAnalyticsProps {
   projectId: string;
@@ -106,13 +107,29 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projectId }) => {
         label: 'Completed',
         data: analytics.assigneeStats.map(stat => stat.completed),
         backgroundColor: '#10B981',
+        borderRadius: 4,
       },
       {
         label: 'Pending',
         data: analytics.assigneeStats.map(stat => stat.pending),
         backgroundColor: '#F59E0B',
+        borderRadius: 4,
       },
     ],
+  };
+
+  const trendData = {
+    labels: analytics.completionTrend.map(item => item._id), // Date strings
+    datasets: [
+      {
+        label: 'Tasks Completed',
+        data: analytics.completionTrend.map(item => item.count),
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true,
+      }
+    ]
   };
 
   const chartOptions = {
@@ -130,89 +147,155 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projectId }) => {
     : 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Project Analytics</h3>
-        <select
-          value={timeframe}
-          onChange={(e) => setTimeframe(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="90">Last 90 days</option>
-        </select>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h3 className="text-2xl font-bold text-gray-900">Project Overview</h3>
+          <p className="text-gray-500 text-sm mt-1">Real-time insights and performance metrics</p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Calendar className="h-4 w-4 text-gray-500" />
+          <select
+            value={timeframe}
+            onChange={(e) => setTimeframe(e.target.value)}
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium text-gray-700 cursor-pointer hover:border-blue-300 transition-colors"
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
       </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Tasks</p>
-              <p className="text-2xl font-bold text-gray-900">{analytics.totalTasks}</p>
+        <motion.div 
+          whileHover={{ y: -5 }}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <BarChart3 className="h-6 w-6 text-blue-600" />
             </div>
-            <BarChart3 className="h-8 w-8 text-blue-500" />
+            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Total</span>
           </div>
-        </div>
+          <div>
+            <p className="text-sm text-gray-500 font-medium">Total Tasks</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{analytics.totalTasks}</p>
+          </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Completion Rate</p>
-              <p className="text-2xl font-bold text-green-600">{completionRate}%</p>
+        <motion.div 
+          whileHover={{ y: -5 }}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-green-50 rounded-lg">
+              <TrendingUp className="h-6 w-6 text-green-600" />
             </div>
-            <TrendingUp className="h-8 w-8 text-green-500" />
+            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">Rate</span>
           </div>
-        </div>
+          <div>
+            <p className="text-sm text-gray-500 font-medium">Completion Rate</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{completionRate}%</p>
+          </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Team Members</p>
-              <p className="text-2xl font-bold text-gray-900">{analytics.totalMembers}</p>
+        <motion.div 
+          whileHover={{ y: -5 }}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <Users className="h-6 w-6 text-purple-600" />
             </div>
-            <Users className="h-8 w-8 text-purple-500" />
+            <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-full">Team</span>
           </div>
-        </div>
+          <div>
+            <p className="text-sm text-gray-500 font-medium">Team Members</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{analytics.totalMembers}</p>
+          </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Overdue Tasks</p>
-              <p className="text-2xl font-bold text-red-600">{analytics.overdueTasks}</p>
+        <motion.div 
+          whileHover={{ y: -5 }}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-red-50 rounded-lg">
+              <Clock className="h-6 w-6 text-red-600" />
             </div>
-            <Clock className="h-8 w-8 text-red-500" />
+            <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">Alert</span>
           </div>
-        </div>
+          <div>
+            <p className="text-sm text-gray-500 font-medium">Overdue Tasks</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{analytics.overdueTasks}</p>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h4 className="text-lg font-semibold text-gray-900 mb-4">Task Status Distribution</h4>
-          <div className="h-64">
+      {/* Main Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Trend Chart - Spans 2 columns */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm"
+        >
+          <h4 className="text-lg font-bold text-gray-900 mb-6">Completion Trend</h4>
+          <div className="h-80">
+            <Line data={trendData} options={{...chartOptions, maintainAspectRatio: false }} />
+          </div>
+        </motion.div>
+
+        {/* Status Distribution */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm"
+        >
+          <h4 className="text-lg font-bold text-gray-900 mb-6">Status Overview</h4>
+          <div className="h-64 flex items-center justify-center">
             <Doughnut data={taskStatusData} options={chartOptions} />
           </div>
-        </div>
+        </motion.div>
+      </div>
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h4 className="text-lg font-semibold text-gray-900 mb-4">Priority Distribution</h4>
+      {/* Secondary Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm"
+        >
+          <h4 className="text-lg font-bold text-gray-900 mb-6">Tasks by Priority</h4>
           <div className="h-64">
             <Bar data={priorityData} options={chartOptions} />
           </div>
-        </div>
-      </div>
+        </motion.div>
 
-      {analytics.assigneeStats.length > 0 && (
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h4 className="text-lg font-semibold text-gray-900 mb-4">Team Performance</h4>
-          <div className="h-64">
-            <Bar data={assigneeData} options={chartOptions} />
-          </div>
-        </div>
-      )}
-    </div>
+        {analytics.assigneeStats.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm"
+          >
+            <h4 className="text-lg font-bold text-gray-900 mb-6">Team Performance</h4>
+            <div className="h-64">
+              <Bar data={assigneeData} options={chartOptions} />
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
   );
 };
 
