@@ -15,13 +15,19 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-console.log("SMTP_USER:", process.env.SMTP_USER);
-console.log("SMTP_PASS:", process.env.SMTP_PASS);
+
 
 /**
  * Send project invitation email
  */
 export const sendInvitationEmail = async (email, inviterName, projectTitle, inviteToken, role = 'member') => {
+  console.log('📧 Attempting to send email with config:', {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    user: process.env.SMTP_USER,
+    from: process.env.SMTP_FROM
+  });
+  
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
   const inviteUrl = `${clientUrl}/accept-invite/${inviteToken}`;
   
@@ -56,7 +62,10 @@ export const sendInvitationEmail = async (email, inviterName, projectTitle, invi
     `
   };
 
-  return transporter.sendMail(mailOptions);
+  console.log('📧 Sending email to:', email);
+  const result = await transporter.sendMail(mailOptions);
+  console.log('✅ Email sent successfully:', result.messageId);
+  return result;
 };
 
 /**

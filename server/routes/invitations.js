@@ -298,4 +298,27 @@ router.post("/test-email", authenticateToken, async (req, res) => {
   }
 });
 
+// Test email endpoint
+router.get('/test-email/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    await sendInvitationEmail(
+      email,
+      'Test Admin',
+      'Test Project',
+      'test-token-123',
+      'member'
+    );
+    
+    res.json({ message: 'Test email sent successfully' });
+  } catch (error) {
+    console.error('Test email error:', error);
+    res.status(500).json({
+      message: 'Failed to send test email',
+      error: error.message
+    });
+  }
+});
+
 export default router;
