@@ -95,14 +95,14 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-3xl border ${style.border} ${style.bg} backdrop-blur-sm p-4 h-full flex flex-col shadow-sm w-full`} // added h-full w-full
+      className={`rounded-2xl md:rounded-3xl border ${style.border} ${style.bg} backdrop-blur-sm p-3 md:p-4 h-full flex flex-col shadow-sm w-full`}
     >
       {/* Column Header */}
-      <div className={`flex justify-between items-center mb-4 p-3 rounded-2xl ${style.headerBg} shadow-sm border border-slate-100`}>
-        <div className="flex items-center gap-3">
-          <div className={`w-2.5 h-2.5 rounded-full ring-4 ring-opacity-20 ${style.indicator} ring-${style.indicator.split('-')[1]}-200`} />
-          <h3 className="font-bold text-slate-900 text-sm tracking-wide">{column.title}</h3>
-          <span className={`${style.badge} rounded-full px-2.5 py-0.5 text-xs font-bold`}>
+      <div className={`flex justify-between items-center mb-3 md:mb-4 p-2 md:p-3 rounded-2xl ${style.headerBg} shadow-sm border border-slate-100`}>
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ring-2 md:ring-4 ring-opacity-20 ${style.indicator} ring-${style.indicator.split('-')[1]}-200`} />
+          <h3 className="font-bold text-slate-900 text-xs md:text-sm tracking-wide">{column.title}</h3>
+          <span className={`${style.badge} rounded-full px-2 md:px-2.5 py-0.5 text-xs font-bold`}>
             {tasks.length}
           </span>
         </div>
@@ -112,9 +112,9 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={onCreateTask}
-              className="p-1.5 rounded-lg hover:bg-slate-50 transition-colors"
+              className="p-1 md:p-1.5 rounded-lg hover:bg-slate-50 transition-colors"
             >
-              <Plus className="h-4 w-4 text-slate-500" />
+              <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 text-slate-500" />
             </motion.button>
           )}
         </div>

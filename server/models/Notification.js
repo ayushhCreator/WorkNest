@@ -18,8 +18,9 @@ const notificationSchema = new mongoose.Schema({
       'task_comment',
       'task_status_changed',
       'project_invite',
+      'invitation_accepted',
       'task_due_soon',
-      'task_file_uploaded' // ✅ FIXED HERE
+      'task_file_uploaded'
     ],
     required: true
   },

@@ -473,7 +473,7 @@ const ProjectBoard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden bg-[#F8FAFC] p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 overflow-y-auto md:overflow-hidden bg-[#F8FAFC] p-4 sm:p-6 lg:p-8">
          <AnimatePresence mode="wait">
             {activeTab === 'board' && (
                <motion.div
@@ -499,7 +499,23 @@ const ProjectBoard: React.FC = () => {
                   </div>
 
                   <DragDropContext onDragEnd={handleDragEnd}>
-                     <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
+                     {/* Mobile: Vertical Stack */}
+                     <div className="block md:hidden space-y-4 pb-4">
+                        {columns.map((column) => (
+                           <div key={column.id} className="w-full">
+                              <KanbanColumn
+                                 column={column}
+                                 tasks={filteredTasks.filter(task => task.status === column.status)}
+                                 onCreateTask={canCreateTask() ? () => handleCreateTask(column.id) : undefined}
+                                 onTaskClick={handleTaskClick}
+                                 isViewer={isViewer()}
+                              />
+                           </div>
+                        ))}
+                     </div>
+                     
+                     {/* Desktop: Horizontal Scroll */}
+                     <div className="hidden md:block flex-1 overflow-x-auto overflow-y-hidden pb-4">
                         <div className="flex h-full gap-6 min-w-[800px]">
                            {columns.map((column) => (
                               <div key={column.id} className="flex-1 min-w-[350px] h-full">

@@ -7,12 +7,20 @@ import Counter from '../models/Counter.js';
 export const generateTaskId = async (projectId) => {
   try {
     const project = await Project.findById(projectId).populate('workspace');
-    if (!project || !project.workspace) {
-      throw new Error('Project or workspace not found');
+    if (!project) {
+      console.warn('Project not found for task ID generation:', projectId);
+      return `WN-${Date.now()}`; // Fallback to timestamp
     }
 
-    const workspacePrefix = project.workspace.name.substring(0, 2).toUpperCase();
-    return await getNextSequence(workspacePrefix);
+    // If project has a workspace, use workspace prefix
+    if (project.workspace && project.workspace.name) {
+      const workspacePrefix = project.workspace.name.substring(0, 2).toUpperCase();
+      return await getNextSequence(workspacePrefix);
+    }
+    
+    // Otherwise, use project title prefix
+    const projectPrefix = project.title.substring(0, 2).toUpperCase();
+    return await getNextSequence(projectPrefix);
   } catch (error) {
     console.error('Error generating task ID:', error);
     return `WN-${Date.now()}`; // Fallback to timestamp to prevent blocking
