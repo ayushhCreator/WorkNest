@@ -6,9 +6,6 @@ import {
   FolderKanban,
   Users,
   BarChart3,
-  FileUp,
-  Bell,
-  Shield,
   Menu,
   X,
   Github,
@@ -20,525 +17,249 @@ import {
   Target,
   Slack,
   Webhook,
+  ArrowRight,
+  CheckCircle2,
+  Layout,
+  Shield
 } from "lucide-react";
 import Logo from "../images/worknest_logo.svg";
 
 const Home: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.3 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50 } }
+  };
+
   const features = [
     {
-      icon: <FolderKanban className="h-8 w-8" />,
-      title: "Real-time Kanban Board",
-      description:
-        "Instantly sync tasks and updates across your team with live collaboration powered by Socket.io.",
+      icon: <FolderKanban className="h-6 w-6 text-indigo-600" />,
+      title: "Real-time Kanban",
+      description: "Sync tasks instantly across your team with live socket collaboration.",
     },
     {
-      icon: <Users className="h-8 w-8" />,
-      title: "Workspaces & Teams",
-      description:
-        "Organize your organization with workspaces, teams, and role-based access control.",
+      icon: <Users className="h-6 w-6 text-pink-600" />,
+      title: "Team Workspaces",
+      description: "Organize your organization with workspaces and role-based access.",
     },
     {
-      icon: <Calendar className="h-8 w-8" />,
+      icon: <Calendar className="h-6 w-6 text-purple-600" />,
       title: "Sprint Cycles",
-      description:
-        "Plan and track sprints with burndown charts, velocity tracking, and automated rollover.",
+      description: "Track sprints with burndown charts, velocity, and automated rollover.",
     },
     {
-      icon: <Target className="h-8 w-8" />,
-      title: "Milestones & Roadmaps",
-      description:
-        "Set milestones, track progress, and visualize your project timeline with roadmap views.",
-    },
-    {
-      icon: <BarChart3 className="h-8 w-8" />,
+      icon: <BarChart3 className="h-6 w-6 text-blue-600" />,
       title: "Advanced Analytics",
-      description:
-        "Velocity charts, burndown reports, lead time analysis, and team performance metrics.",
+      description: "Gain insights with velocity charts, lead time analysis, and performance metrics.",
     },
     {
-      icon: <GitBranch className="h-8 w-8" />,
+      icon: <GitBranch className="h-6 w-6 text-gray-800" />,
       title: "GitHub Integration",
-      description:
-        "Link repositories, sync issues, and automate task updates from commits and PRs.",
+      description: "Link repositories and automate task updates from commits and PRs.",
     },
     {
-      icon: <Slack className="h-8 w-8" />,
-      title: "Slack Integration",
-      description:
-        "Get real-time notifications and updates directly in your Slack channels.",
-    },
-    {
-      icon: <Webhook className="h-8 w-8" />,
-      title: "Webhooks & API",
-      description:
-        "Build custom integrations with webhooks and a powerful REST API with rate limiting.",
-    },
-    {
-      icon: <Zap className="h-8 w-8" />,
+      icon: <Zap className="h-6 w-6 text-amber-500" />,
       title: "Custom Workflows",
-      description:
-        "Design custom task workflows with configurable statuses and transitions.",
+      description: "Design custom task workflows with configurable statuses and transitions.",
     },
   ];
-
-  const techStack = [
-    "React",
-    "TypeScript",
-    "Node.js",
-    "Express",
-    "MongoDB",
-    "Redis",
-    "Socket.io",
-    "Docker",
-  ];
-
-  const steps = [
-    {
-      number: "1",
-      title: "Sign Up",
-      description: "Create your account and set up your workspace in minutes.",
-    },
-    {
-      number: "2",
-      title: "Create Projects",
-      description:
-        "Organize work with customizable Kanban boards and templates.",
-    },
-    {
-      number: "3",
-      title: "Invite Team",
-      description: "Collaborate with role-based permissions and secure access.",
-    },
-    {
-      number: "4",
-      title: "Manage Tasks",
-      description:
-        "Assign, track, and complete tasks in real-time collaboration.",
-    },
-  ];
-
-
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900">
+      
+      {/* Background Gradients */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-200/20 rounded-full blur-[100px]" />
+        <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-indigo-200/20 rounded-full blur-[120px]" />
+      </div>
+
       {/* Navbar */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center space-x-2">
-                <Link
-                  to="/"
-                  className="flex items-center gap-2 text-2xl font-bold text-blue-600"
-                >
-                  <img src={Logo} alt="WorkNest Logo" className="w-40 h-10" />
-                </Link>
-                {/* <FolderKanban className="h-8 w-8 text-blue-600" />
-                <span className="text-2xl font-bold text-gray-900">WorkNest</span>
-               */}
+      <nav className="fixed w-full z-50 transition-all duration-300 bg-white/70 backdrop-blur-xl border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between h-20 items-center">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="p-2 bg-indigo-600 rounded-lg group-hover:scale-105 transition-transform shadow-lg shadow-indigo-200">
+                <FolderKanban className="h-6 w-6 text-white" />
               </div>
-            </div>
+              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">WorkNest</span>
+            </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <a
-                href="#features"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Features
-              </a>
-              <a
-                href="#how-it-works"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                How It Works
-              </a>
-              <a
-                href="#tech-stack"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Tech Stack
-              </a>
-              <Link
-                to="/login"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Login
-              </Link>
+              <a href="#features" className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">Features</a>
+              <a href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">How It Works</a>
+              <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">Log in</Link>
               <Link
                 to="/register"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-all hover:shadow-lg active:scale-95"
               >
                 Get Started
               </Link>
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                {isMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
+            <div className="md:hidden">
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-600 p-2">
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             </div>
           </div>
-
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="md:hidden">
-              <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-                <a
-                  href="#features"
-                  className="block px-3 py-2 text-gray-600 hover:text-gray-900"
-                >
-                  Features
-                </a>
-                <a
-                  href="#how-it-works"
-                  className="block px-3 py-2 text-gray-600 hover:text-gray-900"
-                >
-                  How It Works
-                </a>
-                <a
-                  href="#tech-stack"
-                  className="block px-3 py-2 text-gray-600 hover:text-gray-900"
-                >
-                  Tech Stack
-                </a>
-                <Link
-                  to="/login"
-                  className="block px-3 py-2 text-gray-600 hover:text-gray-900"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="block px-3 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-center"
-                >
-                  Get Started
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100 absolute w-full"
+          >
+            <div className="px-6 py-8 space-y-4">
+              <a href="#features" className="block text-lg font-medium text-gray-900">Features</a>
+              <a href="#how-it-works" className="block text-lg font-medium text-gray-900">How It Works</a>
+              <hr className="border-gray-100"/>
+              <Link to="/login" className="block text-lg font-medium text-gray-900">Log in</Link>
+              <Link to="/register" className="block w-full text-center py-3 bg-indigo-600 text-white font-medium rounded-xl">Get Started</Link>
+            </div>
+          </motion.div>
+        )}
       </nav>
 
-      {/* Hero Section with Animation */}
-      <div className="bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 z-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
           <motion.div
-            className="text-center space-y-8"
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto space-y-8"
           >
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900">
-                Real-time Kanban
-                <span className="text-blue-600">
-                  {" "}
-                  Project Management System
-                </span>
-              </h1>
-              <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
-                Streamline your team's workflow with real-time collaboration,
-                advanced analytics, and enterprise-grade features.
-              </p>
-            </motion.div>
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-medium mb-4 animate-fade-in-up">
+              <span className="flex h-2 w-2 rounded-full bg-indigo-600 mr-2 animate-pulse"></span>
+              WorkNest 2.0 is now live
+            </div>
+            
+            <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-tight">
+              Project management, <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">reimagined.</span>
+            </h1>
+            
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+              Streamline your team's workflow with real-time collaboration, beautiful Kanban boards, and powerful analytics.
+            </p>
 
-            <motion.div
-              className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.5 }}
-            >
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-8">
               <Link
                 to="/register"
-                className="bg-blue-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-semibold text-lg hover:bg-indigo-700 transition-all hover:shadow-xl hover:shadow-indigo-200 active:scale-95 flex items-center gap-2"
               >
-                <Plus className="h-5 w-5" />
-                <span>Get Started Free</span>
+                Start for free <ArrowRight className="w-5 h-5" />
               </Link>
+              <Link
+                to="/login"
+                className="px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-2xl font-semibold text-lg hover:bg-gray-50 transition-all hover:border-gray-300 active:scale-95"
+              >
+                View Demo
+              </Link>
+            </div>
+
+            {/* Hero Dashboard Preview */}
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 1 }}
+              className="mt-20 relative rounded-3xl overflow-hidden shadow-2xl shadow-indigo-200/50 border border-gray-200/50 bg-white/50 backdrop-blur-sm"
+            >
+               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+               <img 
+                 src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=2574&auto=format&fit=crop" 
+                 alt="WorkNest Dashboard" 
+                 className="w-full h-auto opacity-90 hover:opacity-100 transition-opacity duration-700"
+               />
+               <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent h-1/3 bottom-0 top-auto" />
             </motion.div>
+
           </motion.div>
         </div>
-      </div>
+      </section>
 
-      {/* Features Section with Animation */}
-      <div id="features" className="bg-gray-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Why Choose WorkNest?
-            </h2>
-            <p className="mt-4 text-xl text-gray-600">
-              Everything you need to manage projects and collaborate with your
-              team.
-            </p>
+      {/* Features Grid */}
+      <section id="features" className="py-24 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Everything you need to ship faster.</h2>
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto">Powerful features wrapped in a beautiful interface.</p>
           </div>
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          <motion.div 
+            variants={containerVariants}
             initial="hidden"
-            animate="visible"
-            variants={{
-              visible: {
-                transition: {
-                  staggerChildren: 0.15
-                }
-              },
-              hidden: {}
-            }}
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {features.map((feature, index) => (
               <motion.div
                 key={index}
-                className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-shadow"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: index * 0.15 }}
-                whileHover={{ scale: 1.05 }}
+                variants={itemVariants}
+                whileHover={{ y: -5 }}
+                className="p-8 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 transition-all group"
               >
-                <motion.div
-                  className="text-blue-600 mb-4"
-                  whileHover={{ rotate: 10, scale: 1.2 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
+                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-6 group-hover:bg-indigo-50 transition-colors">
                   {feature.icon}
-                </motion.div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {feature.description}
-                </p>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-gray-500 leading-relaxed font-medium">{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
         </div>
-      </div>
-
-      {/* How It Works Section with Animation */}
-      <div id="how-it-works" className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900">How It Works</h2>
-            <p className="mt-4 text-xl text-gray-600">
-              Get started with WorkNest in four simple steps.
-            </p>
-          </div>
-
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: {
-                transition: {
-                  staggerChildren: 0.18
-                }
-              },
-              hidden: {}
-            }}
-          >
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                className="text-center"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: index * 0.18 }}
-                whileHover={{ scale: 1.07 }}
-              >
-                <motion.div
-                  className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4"
-                  whileHover={{ scale: 1.2 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  {step.number}
-                </motion.div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-gray-600">{step.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </div>
-
-      
-
-      {/* Tech Stack Section */}
-      <div id="tech-stack" className="bg-gray-50  py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Built with Modern Technology
-          </h2>
-          <p className="text-xl text-gray-600 mb-12">
-            Powered by industry-leading technologies for performance and
-            reliability.
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            {techStack.map((tech, index) => (
-              <span
-                key={index}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
-                <FolderKanban className="h-8 w-8 text-blue-600" />
-                <span className="text-2xl font-bold text-white">WorkNest</span>
+      <footer className="bg-white border-t border-gray-100 pt-20 pb-12">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+            <div className="col-span-2">
+              <div className="flex items-center gap-2 mb-6">
+                 <div className="p-1.5 bg-indigo-600 rounded-lg">
+                    <FolderKanban className="h-6 w-6 text-white" />
+                 </div>
+                 <span className="text-xl font-bold text-gray-900">WorkNest</span>
               </div>
-              <p className="text-gray-400 mb-6 max-w-md">
-                The modern project management solution for teams who want to
-                work smarter, not harder.
-              </p>
-              <div className="flex space-x-4">
-                <a
-                  href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  <Github className="h-6 w-6" />
-                </a>
-                <a
-                  href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  <Twitter className="h-6 w-6" />
-                </a>
-                <a
-                  href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  <Linkedin className="h-6 w-6" />
-                </a>
-              </div>
+              <p className="text-gray-500 max-w-sm">The modern standard for project management. Built for teams that move fast.</p>
             </div>
-
             <div>
-              <h3 className="text-white font-semibold mb-4">Product</h3>
-              <ul className="space-y-2">
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Demo
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    API
-                  </a>
-                </li>
+              <h4 className="font-bold text-gray-900 mb-4">Product</h4>
+              <ul className="space-y-3 text-sm text-gray-500">
+                <li><a href="#" className="hover:text-indigo-600">Features</a></li>
+                <li><a href="#" className="hover:text-indigo-600">Security</a></li>
+                <li><a href="#" className="hover:text-indigo-600">Enterprise</a></li>
               </ul>
             </div>
-
             <div>
-              <h3 className="text-white font-semibold mb-4">Company</h3>
-              <ul className="space-y-2">
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Contact
-                  </a>
-                </li>
+              <h4 className="font-bold text-gray-900 mb-4">Company</h4>
+              <ul className="space-y-3 text-sm text-gray-500">
+                <li><a href="#" className="hover:text-indigo-600">About</a></li>
+                <li><a href="#" className="hover:text-indigo-600">Blog</a></li>
+                <li><a href="#" className="hover:text-indigo-600">Careers</a></li>
               </ul>
             </div>
           </div>
-
-          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © 2025 WorkNest. All rights reserved.
-            </p>
-            <div className="flex space-x-6 mt-4 sm:mt-0">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors text-sm"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors text-sm"
-              >
-                Terms of Service
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors text-sm"
-              >
-                Cookie Policy
-              </a>
+          <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-400">© 2025 WorkNest Inc. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="#" className="text-gray-400 hover:text-gray-600"><Github className="w-5 h-5" /></a>
+              <a href="#" className="text-gray-400 hover:text-gray-600"><Twitter className="w-5 h-5" /></a>
+              <a href="#" className="text-gray-400 hover:text-gray-600"><Linkedin className="w-5 h-5" /></a>
             </div>
           </div>
         </div>

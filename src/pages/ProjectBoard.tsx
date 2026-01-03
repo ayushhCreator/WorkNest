@@ -10,8 +10,9 @@ import TaskDetailModal from '../components/TaskDetailModal';
 import InviteMemberModal from '../components/InviteMemberModal';
 import TaskFilters from '../components/TaskFilters';
 import ProjectAnalytics from '../components/ProjectAnalytics';
-import { Users, UserPlus, BarChart3, Activity, Settings } from 'lucide-react';
+import { Users, UserPlus, BarChart3, Activity, Settings, Layout, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Task {
   _id: string;
@@ -108,7 +109,6 @@ const ProjectBoard: React.FC = () => {
 
   const { socket } = useSocket();
 
-
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -120,9 +120,6 @@ const ProjectBoard: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-
-
 
   // Helper function to remove duplicates from tasks array
   const removeDuplicateTasks = useCallback((tasksArray: Task[]): Task[] => {
@@ -146,7 +143,6 @@ const ProjectBoard: React.FC = () => {
     try {
       const response = await axios.get(`/api/tasks/project/${id}`);
       const tasksData = response.data.tasks || response.data;
-      // Remove duplicates when setting tasks
       setTasks(removeDuplicateTasks(tasksData));
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -201,11 +197,8 @@ const ProjectBoard: React.FC = () => {
 
       socket.on('task-created', (task: Task) => {
         setTasks(prev => {
-          // Check if task already exists to prevent duplicates
           const taskExists = prev.some(t => t._id === task._id);
-          if (taskExists) {
-            return prev;
-          }
+          if (taskExists) return prev;
           return [task, ...prev];
         });
       });
@@ -248,7 +241,6 @@ const ProjectBoard: React.FC = () => {
 
     const { source, destination, draggableId } = result;
 
-    // If dropped in same place
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
@@ -263,7 +255,6 @@ const ProjectBoard: React.FC = () => {
     const oldStatus = task.status;
     const oldColumnId = task.columnId;
 
-    // 1. Optimistic Update: Update UI immediately
     setTasks(prev =>
       prev.map(t =>
         t._id === draggableId
@@ -273,15 +264,12 @@ const ProjectBoard: React.FC = () => {
     );
 
     try {
-      // 2. Call API in background
       await axios.put(`/api/tasks/${draggableId}`, {
         status: newStatus,
         columnId: newStatus
       });
     } catch (error) {
       console.error('Error updating task:', error);
-      
-      // 3. Rollback on error
       setTasks(prev =>
         prev.map(t =>
           t._id === draggableId
@@ -289,11 +277,8 @@ const ProjectBoard: React.FC = () => {
             : t
         )
       );
-      // Optional: Show error toast
     }
   };
-
-
 
   const handleCreateTask = (columnId: string) => {
     setSelectedColumn(columnId);
@@ -301,26 +286,15 @@ const ProjectBoard: React.FC = () => {
   };
 
   const handleTaskCreated = (newTask: Task) => {
-    setTasks(prev => {
-      // Check if task already exists to prevent duplicates
-      const taskExists = prev.some(t => t._id === newTask._id);
-      if (taskExists) {
-        return prev;
-      }
-      return [newTask, ...prev];
-    });
     setShowCreateModal(false);
   };
 
   const handleTaskClick = (task: Task) => {
-    if (!task.attachments) {
-      task.attachments = [];
-    }
+    if (!task.attachments) task.attachments = [];
     setSelectedTask(task);
   };
 
   const handleTaskUpdated = (updatedTask: Task) => {
-    console.log('📝 ProjectBoard: handleTaskUpdated called', updatedTask);
     setTasks(prev => prev.map(t => t._id === updatedTask._id ? updatedTask : t));
   };
 
@@ -331,17 +305,6 @@ const ProjectBoard: React.FC = () => {
 
   const canInviteMembers = () => {
     if (!project || !user) return false;
-    const userMember = project.members.find(member => 
-      member.user._id === user.id || member.user._id === user.id // Check ID match
-      // Note: user.id from AuthContext might be string, member.user._id might be string.
-    );
-    // Actually, let's look at user object structure in AuthContext.
-    // user.id
-    // member.user might be populated object OR id string.
-    // In ProjectBoard fetch: .populate('members.user', 'name email')
-    // So member.user is an object with _id.
-    
-    // Let's rely on robust check:
     const memberRecord = project.members.find(m => m.user._id === user.id);
     return memberRecord && ['admin', 'member'].includes(memberRecord.role);
   };
@@ -364,7 +327,6 @@ const ProjectBoard: React.FC = () => {
      return memberRecord?.role === 'viewer';
   };
 
-  // Clean up tasks on component mount to remove any existing duplicates
   useEffect(() => {
     if (tasks.length > 0) {
       const uniqueTasks = removeDuplicateTasks(tasks);
@@ -374,16 +336,10 @@ const ProjectBoard: React.FC = () => {
     }
   }, [tasks.length, tasks, removeDuplicateTasks]);
 
-  // Keep selectedTask in sync with tasks state
   useEffect(() => {
     if (selectedTask) {
       const updatedTask = tasks.find(t => t._id === selectedTask._id);
       if (updatedTask && JSON.stringify(updatedTask) !== JSON.stringify(selectedTask)) {
-        console.log('🔄 ProjectBoard: Syncing selectedTask', {
-          current: selectedTask,
-          updated: updatedTask,
-          diff_attachments: updatedTask.attachments.length !== selectedTask.attachments.length
-        });
         setSelectedTask(updatedTask);
       }
     }
@@ -391,17 +347,17 @@ const ProjectBoard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Project not found</h2>
-        <p className="text-gray-600">The project you're looking for doesn't exist or you don't have access to it.</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">Project not found</h2>
+        <p className="text-slate-500">The project you're looking for doesn't exist or you don't have access to it.</p>
       </div>
     );
   }
@@ -413,206 +369,197 @@ const ProjectBoard: React.FC = () => {
   ];
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col">
-      <div className="space-y-6 mb-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <div
-            className="w-4 h-4 rounded-full"
-            style={{ backgroundColor: project.color }}
-          />
-          <div>
-            <h1 className="text- font-bold text-gray-900">{project.title}</h1>
-            <p className="text-gray-600 mt-1">{project.description}</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          {/* to see all memebers */}
-          <div className="relative">
-            <button
-              onClick={() => setShowMemberDropdown(prev => !prev)}
-              className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800"
-            >
-              <Users className="h-5 w-5 text-gray-500" />
-              <span>{project.members.length} members</span>
-            </button>
-
-            {showMemberDropdown && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                <div className="p-2 max-h-80 overflow-y-auto custom-scrollbar">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Project Members</h3>
-                  {project.members.length > 0 ? (
-                    project.members.map(({ user: memberUser, role }) => (
-                      <div key={memberUser._id} className="p-2 hover:bg-gray-50 rounded flex items-center justify-between group">
-                        <div className="flex-1 min-w-0 mr-2">
-                          <p className="text-sm font-medium text-gray-800 truncate">{memberUser.name}</p>
-                          <p className="text-xs text-gray-500 truncate">{memberUser.email}</p>
-                        </div>
-                        
-                        {/* Role Management */}
-                        {(user?.id && project.members.find(m => m.user._id === user.id)?.role.match(/^(owner|admin)$/)) && memberUser._id !== user.id && role !== 'owner' ? (
-                          <select
-                            value={role}
-                            onChange={async (e) => {
-                              try {
-                                await axios.put(`/api/projects/${id}/members/${memberUser._id}/role`, {
-                                  role: e.target.value
-                                });
-                                fetchProject(); // Refresh
-                              } catch (err) {
-                                console.error('Failed to update role', err);
-                                alert('Failed to update role');
-                              }
-                            }}
-                            className="text-xs border border-gray-200 rounded px-1 py-0.5 bg-white focus:outline-none focus:border-blue-500 cursor-pointer"
-                          >
-                            <option value="member">Member</option>
-                            <option value="viewer">Viewer</option>
-                            <option value="admin">Admin</option>
-                          </select>
-                        ) : (
-                          <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
-                            role === 'owner' ? 'bg-purple-100 text-purple-700' :
-                            role === 'admin' ? 'bg-blue-100 text-blue-700' :
-                            role === 'viewer' ? 'bg-gray-100 text-gray-700' :
-                            'bg-green-100 text-green-700'
-                          }`}>
-                            {role}
-                          </span>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500 p-2">No members yet</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-            {/* Settings Button */}
-            {isAdmin() && (
-              <Link
-                to={`/project/${project._id}/settings`}
-                className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Settings className="h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            )}
-
-            {canInviteMembers() && (
-              <button
-                onClick={() => setShowInviteModal(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                disabled={loading}
-              >
-                <UserPlus className="h-4 w-4" />
-                <span>Invite</span>
-              </button>
-            )}
-          {/* <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-            <Settings className="h-5 w-5 text-gray-500" />
-          </button> */}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('board')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'board'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-          >
-            Kanban Board
-          </button>
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'analytics'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-          >
-            <BarChart3 className="h-4 w-4" />
-            <span>Analytics</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('activity')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'activity'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-          >
-            <Activity className="h-4 w-4" />
-            <span>Activity</span>
-          </button>
-        </nav>
-      </div>
-
-      {activeTab === 'board' && (
-        <>
-          <TaskFilters
-            search={search}
-            setSearch={setSearch}
-            assigneeFilter={assigneeFilter}
-            setAssigneeFilter={setAssigneeFilter}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            priorityFilter={priorityFilter}
-            setPriorityFilter={setPriorityFilter}
-            members={project.members}
-            onClearFilters={clearFilters}
-          />
-
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {columns.map((column) => (
-                <KanbanColumn
-                  key={column.id}
-                  column={column}
-                  tasks={filteredTasks.filter(task => task.status === column.status)}
-                  onCreateTask={canCreateTask() ? () => handleCreateTask(column.id) : undefined}
-                  onTaskClick={handleTaskClick}
-                  isViewer={isViewer()}
-                />
-              ))}
+    <div className="h-full flex flex-col font-sans">
+      {/* Header */}
+      <div className="px-4 sm:px-6 lg:px-8 bg-white/70 backdrop-blur-xl border-b border-white/60 pt-6 pb-0 shadow-sm shadow-indigo-100/20 z-10 shrink-0">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-6">
+          <div className="flex items-start gap-4">
+            <div 
+               className="w-12 h-12 rounded-2xl shadow-lg border-2 border-white transform transition-transform hover:scale-105"
+               style={{ backgroundColor: project.color }}
+            />
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{project.title}</h1>
+              <p className="text-slate-500 text-sm max-w-xl line-clamp-1">{project.description}</p>
             </div>
-          </DragDropContext>
-        </>
-      )}
-
-      {activeTab === 'analytics' && (
-        <ProjectAnalytics projectId={id!} />
-      )}
-
-      {activeTab === 'activity' && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            {project.activityLogs?.map((log) => (
-              <div key={log._id} className="flex items-start space-x-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-xs font-medium text-blue-600">
-                    {log.user.name.charAt(0).toUpperCase()}
-                  </span>
+          </div>
+          
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative group z-20">
+              <button
+                onClick={() => setShowMemberDropdown(prev => !prev)}
+                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm member-dropdown-button"
+              >
+                <div className="flex -space-x-2">
+                    {project.members.slice(0, 3).map((m, i) => (
+                       <div key={i} className="w-6 h-6 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-600">
+                          {m.user.name.charAt(0)}
+                       </div>
+                    ))}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{log.description}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {new Date(log.createdAt).toLocaleString()}
-                  </p>
+                <span className="text-sm font-medium text-slate-600">{project.members.length} members</span>
+              </button>
+
+              {showMemberDropdown && (
+                <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-2 member-dropdown-list z-50">
+                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 py-2">Team Members</h3>
+                   <div className="max-h-64 overflow-y-auto custom-scrollbar space-y-1">
+                      {project.members.map((member) => (
+                         <div key={member.user._id} className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div className="flex items-center gap-3">
+                               <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                                  {member.user.name.charAt(0)}
+                               </div>
+                               <div>
+                                  <p className="text-sm font-bold text-slate-700">{member.user.name}</p>
+                                  <p className="text-xs text-slate-400">{member.role}</p>
+                               </div>
+                            </div>
+                         </div>
+                      ))}
+                   </div>
+                   {canInviteMembers() && (
+                      <button 
+                        onClick={() => setShowInviteModal(true)}
+                        className="w-full mt-2 flex items-center justify-center gap-2 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-colors"
+                      >
+                         <UserPlus className="w-4 h-4" /> Invite Member
+                      </button>
+                   )}
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
+
+            {isAdmin() && (
+               <Link
+                 to={`/project/${project._id}/settings`}
+                 className="p-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm"
+               >
+                 <Settings className="h-5 w-5" />
+               </Link>
+            )}
+
+            {canCreateTask() && (
+               <button
+                  onClick={() => handleCreateTask('todo')}
+                  className="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
+               >
+                  <Plus className="h-4 w-4" /> <span className="hidden sm:inline">New Task</span>
+               </button>
+            )}
           </div>
         </div>
-      )}
 
+        {/* Tab Navigation */}
+        <div className="flex space-x-8">
+           {[
+              { id: 'board', label: 'Kanban Board', icon: Layout },
+              { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+              { id: 'activity', label: 'Activity', icon: Activity }
+           ].map((tab) => (
+              <button
+                 key={tab.id}
+                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                 className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${
+                    activeTab === tab.id 
+                    ? 'border-indigo-600 text-indigo-600' 
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                 }`}
+              >
+                 <tab.icon className="w-4 h-4" />
+                 {tab.label}
+              </button>
+           ))}
+        </div>
       </div>
 
+      <div className="flex-1 overflow-hidden bg-[#F8FAFC] p-4 sm:p-6 lg:p-8">
+         <AnimatePresence mode="wait">
+            {activeTab === 'board' && (
+               <motion.div
+                  key="board"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="h-full flex flex-col"
+               >
+                  <div className="mb-6">
+                     <TaskFilters
+                        search={search}
+                        setSearch={setSearch}
+                        assigneeFilter={assigneeFilter}
+                        setAssigneeFilter={setAssigneeFilter}
+                        statusFilter={statusFilter}
+                        setStatusFilter={setStatusFilter}
+                        priorityFilter={priorityFilter}
+                        setPriorityFilter={setPriorityFilter}
+                        members={project.members}
+                        onClearFilters={clearFilters}
+                     />
+                  </div>
+
+                  <DragDropContext onDragEnd={handleDragEnd}>
+                     <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
+                        <div className="flex h-full gap-6 min-w-[800px]">
+                           {columns.map((column) => (
+                              <div key={column.id} className="flex-1 min-w-[350px] h-full">
+                                 <KanbanColumn
+                                    column={column}
+                                    tasks={filteredTasks.filter(task => task.status === column.status)}
+                                    onCreateTask={canCreateTask() ? () => handleCreateTask(column.id) : undefined}
+                                    onTaskClick={handleTaskClick}
+                                    isViewer={isViewer()}
+                                 />
+                              </div>
+                           ))}
+                        </div>
+                     </div>
+                  </DragDropContext>
+               </motion.div>
+            )}
+
+            {activeTab === 'analytics' && (
+               <motion.div
+                  key="analytics"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full overflow-y-auto custom-scrollbar"
+               >
+                  <ProjectAnalytics projectId={id!} />
+               </motion.div>
+            )}
+
+            {activeTab === 'activity' && (
+               <motion.div
+                  key="activity"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="bg-white rounded-3xl border border-white/60 shadow-sm p-6 overflow-y-auto custom-scrollbar max-w-3xl mx-auto"
+               >
+                  <h3 className="text-xl font-bold text-slate-900 mb-6">Recent Activity</h3>
+                  <div className="space-y-6 relative before:absolute before:inset-y-0 before:left-4 before:w-0.5 before:bg-slate-100">
+                     {project.activityLogs?.map((log) => (
+                        <div key={log._id} className="relative pl-10">
+                           <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-indigo-50 border-4 border-white flex items-center justify-center text-xs font-bold text-indigo-600">
+                              {log.user.name.charAt(0)}
+                           </div>
+                           <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                              <p className="text-sm font-medium text-slate-900">
+                                 <span className="font-bold text-indigo-600">{log.user.name}</span> {log.description.toLowerCase()}
+                              </p>
+                              <p className="text-xs text-slate-400 mt-2 font-medium">
+                                 {new Date(log.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                              </p>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+               </motion.div>
+            )}
+         </AnimatePresence>
+      </div>
 
       {showCreateModal && (
         <CreateTaskModal
@@ -628,9 +575,7 @@ const ProjectBoard: React.FC = () => {
         <InviteMemberModal
           projectId={id!}
           onClose={() => setShowInviteModal(false)}
-          onInviteSent={() => {
-            fetchProject();
-          }}
+          onInviteSent={() => { fetchProject(); }}
         />
       )}
 

@@ -40,7 +40,7 @@ function App() {
               } />
               <Route path="/project/:id" element={
                 <ProtectedRoute>
-                  <Layout>
+                <Layout fullWidth>
                     <ProjectBoard />
                   </Layout>
                 </ProtectedRoute>

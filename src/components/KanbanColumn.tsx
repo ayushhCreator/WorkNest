@@ -56,38 +56,35 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
     switch (status) {
       case 'todo':
         return {
-          bg: 'bg-gradient-to-b from-amber-50 to-orange-50',
-          border: 'border-amber-200',
-          badge: 'bg-amber-100 text-amber-700',
-          dot: 'bg-amber-500'
+          bg: 'bg-slate-50/50',
+          headerBg: 'bg-white',
+          border: 'border-slate-200/60',
+          badge: 'bg-indigo-100 text-indigo-700',
+          indicator: 'bg-indigo-500'
         };
       case 'inprogress':
         return {
-          bg: 'bg-gradient-to-b from-blue-50 to-indigo-50',
-          border: 'border-blue-200',
-          badge: 'bg-blue-100 text-blue-700',
-          dot: 'bg-blue-500'
-        };
-      case 'review':
-        return {
-          bg: 'bg-gradient-to-b from-purple-50 to-pink-50',
-          border: 'border-purple-200',
-          badge: 'bg-purple-100 text-purple-700',
-          dot: 'bg-purple-500'
+          bg: 'bg-slate-50/50',
+          headerBg: 'bg-white',
+          border: 'border-slate-200/60',
+          badge: 'bg-amber-100 text-amber-700',
+          indicator: 'bg-amber-500'
         };
       case 'done':
         return {
-          bg: 'bg-gradient-to-b from-green-50 to-emerald-50',
-          border: 'border-green-200',
-          badge: 'bg-green-100 text-green-700',
-          dot: 'bg-green-500'
+           bg: 'bg-slate-50/50',
+           headerBg: 'bg-white',
+           border: 'border-slate-200/60',
+           badge: 'bg-emerald-100 text-emerald-700',
+           indicator: 'bg-emerald-500'
         };
       default:
         return {
-          bg: 'bg-gradient-to-b from-gray-50 to-slate-50',
-          border: 'border-gray-200',
-          badge: 'bg-gray-100 text-gray-700',
-          dot: 'bg-gray-500'
+           bg: 'bg-slate-50/50',
+           headerBg: 'bg-white',
+           border: 'border-slate-200/60',
+           badge: 'bg-slate-100 text-slate-700',
+           indicator: 'bg-slate-500'
         };
     }
   };
@@ -98,14 +95,14 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-2xl border ${style.border} ${style.bg} p-4 min-h-[500px] flex flex-col`}
+      className={`rounded-3xl border ${style.border} ${style.bg} backdrop-blur-sm p-4 h-full flex flex-col shadow-sm w-full`} // added h-full w-full
     >
       {/* Column Header */}
-      <div className="flex justify-between items-center mb-4">
+      <div className={`flex justify-between items-center mb-4 p-3 rounded-2xl ${style.headerBg} shadow-sm border border-slate-100`}>
         <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${style.dot}`} />
-          <h3 className="font-semibold text-gray-900">{column.title}</h3>
-          <span className={`${style.badge} rounded-full px-2.5 py-0.5 text-xs font-medium`}>
+          <div className={`w-2.5 h-2.5 rounded-full ring-4 ring-opacity-20 ${style.indicator} ring-${style.indicator.split('-')[1]}-200`} />
+          <h3 className="font-bold text-slate-900 text-sm tracking-wide">{column.title}</h3>
+          <span className={`${style.badge} rounded-full px-2.5 py-0.5 text-xs font-bold`}>
             {tasks.length}
           </span>
         </div>
@@ -115,14 +112,11 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={onCreateTask}
-              className="p-1.5 rounded-lg hover:bg-white/60 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-slate-50 transition-colors"
             >
-              <Plus className="h-4 w-4 text-gray-500" />
+              <Plus className="h-4 w-4 text-slate-500" />
             </motion.button>
           )}
-          <button className="p-1.5 rounded-lg hover:bg-white/60 transition-colors">
-            <MoreHorizontal className="h-4 w-4 text-gray-400" />
-          </button>
         </div>
       </div>
 
@@ -132,9 +126,9 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex-1 space-y-3 rounded-xl p-2 transition-all ${
+            className={`flex-1 space-y-3 rounded-2xl p-1 transition-all ${
               snapshot.isDraggingOver 
-                ? 'bg-white/60 ring-2 ring-blue-300 ring-dashed' 
+                ? 'bg-indigo-50/50 ring-2 ring-indigo-200 ring-dashed' 
                 : ''
             }`}
           >
@@ -142,16 +136,14 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex flex-col items-center justify-center py-8 text-center"
+                onClick={onCreateTask}
+                className={`flex flex-col items-center justify-center py-12 text-center rounded-2xl border-2 border-dashed border-slate-200 ${!isViewer && onCreateTask ? 'cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50' : ''} transition-all`}
               >
-                <div className="text-gray-400 text-sm">No tasks yet</div>
+                <div className="text-slate-400 text-sm font-medium">No tasks yet</div>
                 {!isViewer && onCreateTask && (
-                  <button
-                    onClick={onCreateTask}
-                    className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    + Add a task
-                  </button>
+                  <span className="mt-2 text-xs text-indigo-500 font-bold">
+                    + Add Task
+                  </span>
                 )}
               </motion.div>
             )}
@@ -167,7 +159,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className={`transition-transform ${
-                      snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl z-50' : ''
+                      snapshot.isDragging ? 'rotate-2 scale-105 shadow-2xl z-50' : ''
                     } ${isViewer ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
                   >
                     <TaskCard task={task} onClick={() => onTaskClick(task)} />
@@ -180,16 +172,16 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, tasks, onCreateTask
         )}
       </Droppable>
 
-      {/* Quick Add Button */}
+      {/* Quick Add Button Footer */}
       {!isViewer && onCreateTask && (
       <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
         onClick={onCreateTask}
-        className="mt-3 w-full py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-gray-500 text-sm font-medium hover:border-gray-300 hover:text-gray-600 hover:bg-white/50 transition-all flex items-center justify-center gap-2"
+        className="mt-2 w-full py-3 rounded-xl hover:bg-white/80 text-slate-400 hover:text-indigo-600 text-sm font-bold transition-all flex items-center justify-center gap-2"
       >
         <Plus className="h-4 w-4" />
-        Add Task
+        <span className="opacity-0 hover:opacity-100 transition-opacity">Add Task</span>
       </motion.button>
       )}
     </motion.div>

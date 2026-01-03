@@ -64,7 +64,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onProjectDeleted }) 
   return (
     <motion.div 
       whileHover={{ y: -4 }}
-      className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+      className="bg-white rounded-3xl border border-indigo-50 shadow-sm shadow-indigo-100/50 hover:shadow-xl hover:shadow-indigo-200/50 transition-all duration-300 group overflow-hidden"
     >
       {/* Color Bar */}
       <div 

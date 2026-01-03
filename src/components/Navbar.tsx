@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
 import Logo from '../images/worknest_logo.svg';
@@ -11,15 +11,17 @@ import {
   ChevronDown,
   Settings,
   HelpCircle,
-  Palette
+  Palette,
+  Menu,
+  X
 } from 'lucide-react';
-import { useState } from 'react';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -36,7 +38,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
+    <nav className="bg-white/70 backdrop-blur-xl border-b border-indigo-50/50 sticky top-0 z-50 supports-[backdrop-filter]:bg-white/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side - Logo and navigation */}
@@ -48,10 +50,10 @@ const Navbar: React.FC = () => {
             <div className="hidden md:flex items-center gap-1">
               <Link
                 to="/dashboard"
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                   location.pathname === '/dashboard'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100'
+                    : 'text-slate-500 hover:text-indigo-600 hover:bg-white/50'
                 }`}
               >
                 <LayoutDashboard className="h-4 w-4" />
@@ -59,10 +61,10 @@ const Navbar: React.FC = () => {
               </Link>
               <Link
                 to="/design"
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                   location.pathname === '/design'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100'
+                    : 'text-slate-500 hover:text-indigo-600 hover:bg-white/50'
                 }`}
               >
                 <Palette className="h-4 w-4" />
@@ -76,8 +78,16 @@ const Navbar: React.FC = () => {
             {/* Notifications */}
             <NotificationDropdown />
 
-            {/* User Menu */}
-            <div className="relative">
+            {/* Mobile Menu Toggle */}
+            <button
+               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+               className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
+            >
+               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+
+            {/* Desktop User Menu */}
+            <div className="hidden md:block relative">
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowUserMenu(!showUserMenu)}
@@ -87,14 +97,14 @@ const Navbar: React.FC = () => {
                   <img 
                     src={user.avatar} 
                     alt={user.name} 
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 border-white">
                     {user?.name ? getInitials(user.name) : 'U'}
                   </div>
                 )}
-                <div className="hidden md:block text-left">
+                <div className="text-left">
                   <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                   <p className="text-xs text-gray-500">{user?.role || 'Member'}</p>
                 </div>
@@ -151,6 +161,85 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-xl overflow-hidden shadow-xl"
+          >
+            <div className="px-4 py-4 space-y-4">
+              <div className="flex items-center gap-3 px-2">
+                 {user?.avatar ? (
+                    <img 
+                      src={user.avatar} 
+                      alt={user.name} 
+                      className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 border-white">
+                      {user?.name ? getInitials(user.name) : 'U'}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-bold text-gray-900">{user?.name}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+              </div>
+              
+              <div className="space-y-1">
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                    location.pathname === '/dashboard'
+                      ? 'bg-indigo-50 text-indigo-600'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <LayoutDashboard className="h-5 w-5" />
+                  Dashboard
+                </Link>
+                <Link
+                  to="/design"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                    location.pathname === '/design'
+                      ? 'bg-indigo-50 text-indigo-600'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <Palette className="h-5 w-5" />
+                  Design System
+                </Link>
+                <div className="border-t border-gray-100 my-2 pt-2">
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50"
+                  >
+                    <User className="h-5 w-5" />
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

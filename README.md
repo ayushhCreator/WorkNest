@@ -243,21 +243,54 @@ The application uses Socket.io for real-time collaboration:
 - Cannot create or edit content
 - Cannot access project settings
 
-## 🚀 Deployment
+### Premium Design
+- **✨ Modern Glassmorphism**: Stunning UI with glass-morphic cards, gradients, and blur effects
+- **🎨 Vibrant Aesthetics**: Rich, dynamic color palettes using the 'Outfit' typeface
+- **🎬 Smooth Animations**: Staggered entrances and micro-interactions powered by Framer Motion
+- **📱 Mobile Optimized**: Fully responsive layouts with native-like mobile navigation
 
-### Backend Deployment
-1. Set up MongoDB Atlas or your preferred MongoDB hosting
-2. Configure environment variables for production
-3. Set up email service (SMTP) for notifications
-4. Configure Cloudinary for file storage
-5. Deploy to platforms like Heroku, Railway, or DigitalOcean
-6. Update CORS settings for the production domain
+## 🚀 Deployment (Free Tier Guide)
 
-### Frontend Deployment
-1. Update API URLs in environment variables
-2. Build the production version: `npm run build`
-3. Deploy to platforms like Netlify, Vercel, or AWS S3
-4. Configure build settings and environment variables
+The recommended way to deploy WorkNest for **free** (Frontend + Backend) is using **Render.com**.
+
+### Prerequisites
+1.  **MongoDB Atlas**: Create a free cluster at [MongoDB Atlas](https://www.mongodb.com/atlas) and get your connection string (`mongodb+srv://...`).
+2.  **Cloudinary**: Sign up for a free account to get `CLOUD_NAME`, `API_KEY`, and `API_SECRET`.
+3.  **GitHub**: Push your code to a GitHub repository.
+
+### Step 1: Deploy Backend (Render Web Service)
+1.  Sign up at [Render.com](https://render.com).
+2.  Click **New +** -> **Web Service**.
+3.  Connect your GitHub repository.
+4.  **Settings**:
+    -   **Root Directory**: `server`
+    -   **Runtime**: `Node`
+    -   **Build Command**: `npm install`
+    -   **Start Command**: `npm start`
+    -   **Plan**: `Free`
+5.  **Environment Variables**:
+    -   `NODE_ENV`: `production`
+    -   `MONGODB_URI`: (Your Atlas connection string)
+    -   `JWT_SECRET`: (Generate a strong random string)
+    -   `CLIENT_URL`: (You will update this *after* deploying the frontend, e.g., `https://worknest-frontend.onrender.com`)
+    -   `CLOUDINARY_...`: (Your Cloudinary credentials)
+
+### Step 2: Deploy Frontend (Render Static Site)
+1.  Click **New +** -> **Static Site**.
+2.  Connect the *same* GitHub repository.
+3.  **Settings**:
+    -   **Root Directory**: `.` (leave empty or dot)
+    -   **Build Command**: `npm install && npm run build`
+    -   **Publish Directory**: `dist`
+    -   **Plan**: `Free`
+4.  **Environment Variables**:
+    -   `VITE_API_URL`: (The URL of your deployed Backend, e.g., `https://worknest-backend.onrender.com`)
+
+### Step 3: Final Link
+1.  Copy your new **Frontend URL** (e.g., `https://worknest-frontend.onrender.com`).
+2.  Go back to your **Backend Service** settings in Render.
+3.  Update the `CLIENT_URL` variable to match your Frontend URL.
+4.  **Done!** Your full stack app is live with real-time features enabled.
 
 ## 🧪 Testing
 

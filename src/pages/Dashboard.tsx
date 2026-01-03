@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, FolderOpen, BarChart3, Users, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { Plus, FolderOpen, BarChart3, Users, CheckCircle, Clock, TrendingUp, Zap, Layout } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../utils/axios';
 import ProjectCard from '../components/ProjectCard';
@@ -86,36 +86,32 @@ const Dashboard: React.FC = () => {
 
   const statCards = [
     { 
-      label: 'Total Projects', 
+      label: 'Active Projects', 
       value: stats.totalProjects, 
-      icon: FolderOpen, 
-      color: 'bg-blue-500',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600'
+      icon: Layout, 
+      gradient: 'from-blue-500 to-indigo-500',
+      shadow: 'shadow-blue-200'
     },
     { 
       label: 'Total Tasks', 
       value: stats.totalTasks, 
       icon: BarChart3, 
-      color: 'bg-purple-500',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-600'
+      gradient: 'from-violet-500 to-purple-500',
+      shadow: 'shadow-purple-200'
     },
     { 
       label: 'Completed', 
       value: stats.completedTasks, 
       icon: CheckCircle, 
-      color: 'bg-green-500',
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-600'
+      gradient: 'from-emerald-400 to-emerald-600',
+      shadow: 'shadow-emerald-200'
     },
     { 
       label: 'Team Members', 
       value: stats.teamMembers, 
       icon: Users, 
-      color: 'bg-orange-500',
-      bgColor: 'bg-orange-50',
-      textColor: 'text-orange-600'
+      gradient: 'from-amber-400 to-orange-500',
+      shadow: 'shadow-orange-200'
     }
   ];
 
@@ -123,38 +119,37 @@ const Dashboard: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col items-center"
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           className="relative"
         >
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-500">Loading your dashboard...</p>
+          <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10 pb-10">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4"
+        className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 py-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.name?.split(' ')[0]}! 👋
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
+            Hello, {user?.name?.split(' ')[0]} 👋
           </h1>
-          <p className="text-gray-500 mt-1">
-            Here's what's happening with your projects today.
+          <p className="text-slate-500 mt-2 text-lg">
+            Let's make today productive.
           </p>
         </div>
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowCreateModal(true)}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-blue-500/25"
+          className="bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold hover:bg-slate-800 transition-all flex items-center gap-2 shadow-xl shadow-slate-200"
         >
           <Plus className="h-5 w-5" />
           <span>New Project</span>
@@ -166,7 +161,7 @@ const Dashboard: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-6"
       >
         {statCards.map((stat, index) => (
           <motion.div
@@ -174,44 +169,48 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + index * 0.05 }}
-            className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+            whileHover={{ y: -5 }}
+            className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-white/60 shadow-sm hover:shadow-xl transition-all group"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">{stat.label}</p>
-                <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-              <div className={`${stat.bgColor} p-3 rounded-xl`}>
-                <stat.icon className={`h-6 w-6 ${stat.textColor}`} />
-              </div>
+            <div className="flex justify-between items-start mb-4">
+               <div className={`p-3 rounded-2xl bg-gradient-to-br ${stat.gradient} text-white shadow-lg ${stat.shadow}`}>
+                 <stat.icon className="h-6 w-6" />
+               </div>
+               {index === 0 && <span className="flex h-3 w-3 rounded-full bg-emerald-500 ring-4 ring-emerald-50"></span>}
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-slate-900 mb-1">{stat.value}</p>
+              <p className="text-slate-500 font-medium text-sm">{stat.label}</p>
             </div>
           </motion.div>
         ))}
       </motion.div>
 
-      {/* Quick Actions */}
+      {/* Momentum Banner */}
       {projects.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white"
+          className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl shadow-indigo-200"
         >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="bg-white/20 p-3 rounded-xl">
-                <TrendingUp className="h-6 w-6" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+          
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex items-center gap-6">
+              <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
+                <Zap className="h-8 w-8 text-yellow-300" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg">Keep up the momentum!</h3>
-                <p className="text-blue-100">
-                  {stats.completedTasks} of {stats.totalTasks} tasks completed
+                <h3 className="font-bold text-2xl mb-1">Weekly Momentum</h3>
+                <p className="text-indigo-100 text-lg">
+                  You've completed <span className="font-bold text-white">{stats.completedTasks}</span> tasks across {stats.totalProjects} projects.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-200" />
-              <span className="text-blue-100">
+            <div className="flex items-center gap-3 bg-white/10 px-6 py-3 rounded-2xl backdrop-blur-sm border border-white/10">
+              <Clock className="h-5 w-5 text-indigo-200" />
+              <span className="font-medium text-white">
                 {stats.totalTasks - stats.completedTasks} tasks remaining
               </span>
             </div>
@@ -219,16 +218,21 @@ const Dashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Projects Section */}
+      {/* Projects Grid */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Your Projects</h2>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <Layout className="h-6 w-6 text-slate-400" />
+            Your Projects
+          </h2>
           {projects.length > 0 && (
-            <span className="text-sm text-gray-500">{projects.length} project{projects.length !== 1 ? 's' : ''}</span>
+            <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-bold">
+              {projects.length}
+            </span>
           )}
         </div>
 
@@ -236,33 +240,30 @@ const Dashboard: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl border border-dashed border-gray-300 p-12 text-center"
+            className="bg-white/50 border-2 border-dashed border-slate-200 rounded-3xl p-16 text-center"
           >
-            <div className="bg-gray-100 rounded-full p-4 w-fit mx-auto mb-4">
-              <FolderOpen className="h-12 w-12 text-gray-400" />
+            <div className="bg-white p-6 rounded-full w-fit mx-auto mb-6 shadow-sm ring-1 ring-slate-100">
+              <FolderOpen className="h-10 w-10 text-indigo-500" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No projects yet</h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No projects yet</h3>
+            <p className="text-slate-500 mb-8 max-w-md mx-auto">
               Create your first project to start organizing tasks and collaborating with your team.
             </p>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+              className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
             >
-              <Plus className="h-5 w-5" />
-              Create Your First Project
-            </motion.button>
+              Create Project
+            </button>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
               <motion.div
                 key={project._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.05 }}
+                transition={{ delay: 0.3 + index * 0.1 }}
               >
                 <ProjectCard
                   project={project}

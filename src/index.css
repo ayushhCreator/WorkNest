@@ -4,5 +4,9 @@
 
 /* index.css or App.css */
 body {
-  @apply font-sans;
+  @apply font-sans bg-slate-50 text-slate-900 antialiased;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.03) 0px, transparent 50%);
+  background-attachment: fixed;
 }

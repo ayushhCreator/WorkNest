@@ -44,15 +44,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
   const getPriorityStyle = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return { bg: 'bg-red-500', text: 'text-white', label: 'Urgent' };
+        return { bg: 'bg-rose-50', text: 'text-rose-600', border: 'ring-rose-100', label: 'Urgent' };
       case 'high':
-        return { bg: 'bg-orange-100', text: 'text-orange-700', label: 'High' };
+        return { bg: 'bg-orange-50', text: 'text-orange-600', border: 'ring-orange-100', label: 'High' };
       case 'medium':
-        return { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Medium' };
+        return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'ring-amber-100', label: 'Medium' };
       case 'low':
-        return { bg: 'bg-green-100', text: 'text-green-700', label: 'Low' };
+        return { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'ring-emerald-100', label: 'Low' };
       default:
-        return { bg: 'bg-gray-100', text: 'text-gray-700', label: priority };
+        return { bg: 'bg-slate-50', text: 'text-slate-600', border: 'ring-slate-100', label: priority };
     }
   };
 
@@ -63,95 +63,95 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
 
   return (
     <motion.div
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer group"
+      className="bg-white rounded-2xl p-4 shadow-sm shadow-slate-200/50 border border-slate-100 hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-100 transition-all cursor-pointer group relative overflow-hidden"
     >
-      {/* Priority Badge */}
+      {/* Hover decoration */}
+      <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      {/* Header Chips */}
       <div className="flex items-start justify-between mb-3">
-        <span className={`${priorityStyle.bg} ${priorityStyle.text} px-2 py-0.5 rounded-md text-xs font-medium`}>
+        <span className={`${priorityStyle.bg} ${priorityStyle.text} ring-1 ${priorityStyle.border} px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider`}>
           {priorityStyle.label}
         </span>
         {isOverdue && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="flex items-center gap-1 text-red-500"
+            className="flex items-center gap-1 text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full ring-1 ring-rose-100"
           >
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="h-3 w-3" />
+            <span className="text-[10px] font-bold">Overdue</span>
           </motion.div>
         )}
       </div>
 
-      {/* Title */}
-      <h4 className="font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+      {/* Main Content */}
+      <h4 className="font-bold text-slate-900 mb-1.5 leading-snug group-hover:text-indigo-600 transition-colors">
         {task.title}
       </h4>
 
-      {/* Description */}
-      {task.description && (
-        <p className="text-sm text-gray-500 mb-3 line-clamp-2">{task.description}</p>
+      {(task.description) && (
+        <p className="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">
+           {task.description}
+        </p>
       )}
+
+      {/* Tags/Meta Row */}
+      <div className="flex items-center gap-3 mb-4">
+         {task.dueDate && (
+            <div className={`flex items-center gap-1.5 text-xs font-medium ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
+               <Calendar className="h-3.5 w-3.5" />
+               <span>{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+            </div>
+         )}
+         {task.estimatedHours && (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
+               <Clock className="h-3.5 w-3.5" />
+               <span>{task.estimatedHours}h</span>
+            </div>
+         )}
+      </div>
+
+      <div className="h-px w-full bg-slate-50 mb-3" />
 
       {/* Footer */}
       <div className="flex items-center justify-between">
-        {/* Left side - Assignee */}
         <div className="flex items-center gap-2">
           {task.assignee && task.assignee.name ? (
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
+            <div className="flex items-center gap-2 pl-1">
+              <div className="w-6 h-6 rounded-full bg-indigo-100 ring-2 ring-white flex items-center justify-center text-[10px] font-bold text-indigo-700 shadow-sm">
                 {task.assignee.name.charAt(0).toUpperCase()}
               </div>
-              <span className="text-xs text-gray-500 hidden sm:inline truncate max-w-[80px]">
+              <span className="text-xs text-slate-600 font-medium truncate max-w-[80px]">
                 {task.assignee.name.split(' ')[0]}
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1 text-gray-400">
-              <User className="h-4 w-4" />
-              <span className="text-xs">Unassigned</span>
+            <div className="flex items-center gap-1.5 text-slate-400 px-1">
+              <User className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium">Unassigned</span>
             </div>
           )}
         </div>
 
-        {/* Right side - Meta info */}
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 pr-1">
           {commentCount > 0 && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-slate-400 hover:text-indigo-500 transition-colors">
               <MessageCircle className="h-3.5 w-3.5" />
-              <span className="text-xs">{commentCount}</span>
+              <span className="text-xs font-bold">{commentCount}</span>
             </div>
           )}
           {attachmentCount > 0 && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-slate-400 hover:text-indigo-500 transition-colors">
               <Paperclip className="h-3.5 w-3.5" />
-              <span className="text-xs">{attachmentCount}</span>
-            </div>
-          )}
-          {task.estimatedHours && (
-            <div className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              <span className="text-xs">{task.estimatedHours}h</span>
+              <span className="text-xs font-bold">{attachmentCount}</span>
             </div>
           )}
         </div>
       </div>
-
-      {/* Due Date */}
-      {task.dueDate && (
-        <div className={`mt-3 pt-3 border-t border-gray-100 flex items-center gap-1.5 text-xs ${
-          isOverdue ? 'text-red-500' : 'text-gray-500'
-        }`}>
-          <Calendar className="h-3.5 w-3.5" />
-          <span>
-            {isOverdue ? 'Overdue: ' : 'Due: '}
-            {new Date(task.dueDate).toLocaleDateString('en-US', { 
-              month: 'short', 
-              day: 'numeric' 
-            })}
-          </span>
-        </div>
-      )}
     </motion.div>
   );
 };
