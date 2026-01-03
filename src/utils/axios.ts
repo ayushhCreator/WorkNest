@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://worknest-backend-ald9.onrender.com',
+  baseURL: import.meta.env.VITE_API_URL || 'https://worknest-11ib.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },

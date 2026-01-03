@@ -88,8 +88,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
             <Link to="/" className="flex items-center gap-2 group">
-              <img src={Logo} alt="WorkNest" className="h-8 group-hover:scale-105 transition-transform" />
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">WorkNest</span>
+              <img src={Logo} alt="WorkNest" className="h-10 group-hover:scale-105 transition-transform" />
             </Link>
 
             {/* Desktop Navigation */}
@@ -229,8 +228,7 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-6">
-                 <img src={Logo} alt="WorkNest" className="h-8" />
-                 <span className="text-xl font-bold text-gray-900">WorkNest</span>
+                 <img src={Logo} alt="WorkNest" className="h-10" />
               </div>
               <p className="text-gray-500 max-w-sm">The modern standard for project management. Built for teams that move fast.</p>
             </div>

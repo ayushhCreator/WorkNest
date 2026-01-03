@@ -52,12 +52,18 @@ app.use('/api', limiter);
 const allowedOrigins = [
   'https://worknestpro.vercel.app',
   'http://localhost:5173',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'https://worknest-11ib.onrender.com' // Add backend URL for health checks
 ];
 
 // ✅ Add environment variable support for additional origins
 if (process.env.CLIENT_URL && !allowedOrigins.includes(process.env.CLIENT_URL)) {
   allowedOrigins.push(process.env.CLIENT_URL);
+}
+
+// ✅ Temporary fix: Add wildcard for Vercel preview deployments
+if (process.env.NODE_ENV === 'production') {
+  allowedOrigins.push(/https:\/\/.*\.vercel\.app$/);
 }
 
 // ✅ Initialize Socket.IO with proper CORS configuration
@@ -81,7 +87,21 @@ connectDB();
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Check against allowed origins (including regex patterns)
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return allowedOrigin === origin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
@@ -90,8 +110,19 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with'],
+  preflightContinue: false,
+  optionsSuccessStatus: 200
 }));
+
+// ✅ Explicit preflight handling
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-requested-with');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
 
 // ✅ Middleware to parse incoming JSON
 app.use(express.json({ limit: '10mb' }));
@@ -110,7 +141,17 @@ app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    allowedOrigins: allowedOrigins 
+    allowedOrigins: allowedOrigins,
+    corsOrigin: req.headers.origin 
+  });
+});
+
+// ✅ CORS debug endpoint
+app.get('/api/cors-test', (req, res) => {
+  res.json({
+    origin: req.headers.origin,
+    allowedOrigins: allowedOrigins,
+    corsAllowed: allowedOrigins.includes(req.headers.origin)
   });
 });
 

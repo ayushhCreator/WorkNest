@@ -45,8 +45,7 @@ const Login: React.FC = () => {
       >
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-            <img src={Logo} alt="WorkNest" className="h-10 group-hover:scale-105 transition-transform" />
-            <span className="text-2xl font-bold text-gray-900">WorkNest</span>
+            <img src={Logo} alt="WorkNest" className="h-12 group-hover:scale-105 transition-transform" />
           </Link>
           <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome back</h2>
           <p className="text-gray-500 mt-2">Enter your credentials to access your workspace</p>
