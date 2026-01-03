@@ -50,7 +50,7 @@ app.use('/api', limiter);
 
 // ✅ Define allowed frontend origins
 const allowedOrigins = [
-  'https://worknest-frontend-jet.vercel.app',
+  'https://worknestpro.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000'
 ];
