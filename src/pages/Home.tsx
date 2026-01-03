@@ -23,6 +23,7 @@ import {
   Shield
 } from "lucide-react";
 import Logo from "../images/worknest_logo.svg";
+import DashboardMockup from "../images/dashboard-mockup.png";
 
 const Home: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -87,9 +88,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="p-2 bg-indigo-600 rounded-lg group-hover:scale-105 transition-transform shadow-lg shadow-indigo-200">
-                <FolderKanban className="h-6 w-6 text-white" />
-              </div>
+              <img src={Logo} alt="WorkNest" className="h-8 group-hover:scale-105 transition-transform" />
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">WorkNest</span>
             </Link>
 
@@ -180,7 +179,7 @@ const Home: React.FC = () => {
             >
                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
                <img 
-                 src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=2574&auto=format&fit=crop" 
+                 src={DashboardMockup}
                  alt="WorkNest Dashboard" 
                  className="w-full h-auto opacity-90 hover:opacity-100 transition-opacity duration-700"
                />
@@ -230,9 +229,7 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-6">
-                 <div className="p-1.5 bg-indigo-600 rounded-lg">
-                    <FolderKanban className="h-6 w-6 text-white" />
-                 </div>
+                 <img src={Logo} alt="WorkNest" className="h-8" />
                  <span className="text-xl font-bold text-gray-900">WorkNest</span>
               </div>
               <p className="text-gray-500 max-w-sm">The modern standard for project management. Built for teams that move fast.</p>

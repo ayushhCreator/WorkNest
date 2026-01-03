@@ -275,22 +275,21 @@ The recommended way to deploy WorkNest for **free** (Frontend + Backend) is usin
     -   `CLIENT_URL`: (You will update this *after* deploying the frontend, e.g., `https://worknest-frontend.onrender.com`)
     -   `CLOUDINARY_...`: (Your Cloudinary credentials)
 
-### Step 2: Deploy Frontend (Render Static Site)
-1.  Click **New +** -> **Static Site**.
-2.  Connect the *same* GitHub repository.
-3.  **Settings**:
-    -   **Root Directory**: `.` (leave empty or dot)
-    -   **Build Command**: `npm install && npm run build`
-    -   **Publish Directory**: `dist`
-    -   **Plan**: `Free`
-4.  **Environment Variables**:
-    -   `VITE_API_URL`: (The URL of your deployed Backend, e.g., `https://worknest-backend.onrender.com`)
+### Step 2: Deploy Frontend (Vercel)
+1.  Sign up at [Vercel](https://vercel.com).
+2.  Click **Add New...** -> **Project**.
+3.  Import your GitHub repository.
+4.  **Framework Preset**: Select `Vite`.
+5.  **Environment Variables**:
+    -   `VITE_API_URL`: (The URL of your deployed Render Backend, e.g., `https://worknest-backend.onrender.com`)
+6.  Click **Deploy**.
 
-### Step 3: Final Link
-1.  Copy your new **Frontend URL** (e.g., `https://worknest-frontend.onrender.com`).
-2.  Go back to your **Backend Service** settings in Render.
-3.  Update the `CLIENT_URL` variable to match your Frontend URL.
-4.  **Done!** Your full stack app is live with real-time features enabled.
+### Step 3: Connect Them (CORS)
+1.  Copy your new **Vercel Frontend URL** (e.g., `https://worknestpro.vercel.app`).
+2.  Go back to your **Render Backend Service** settings -> **Environment**.
+3.  Update (or Add) the `CLIENT_URL` variable to match your Vercel URL (no trailing slash).
+4.  **Redeploy** the backend service on Render to apply the CORS change.
+5.  **Done!** Your Vercel frontend can now talk to your Render backend.
 
 ## 🧪 Testing
 

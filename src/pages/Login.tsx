@@ -45,9 +45,7 @@ const Login: React.FC = () => {
       >
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-            <div className="p-2 bg-indigo-600 rounded-lg group-hover:scale-105 transition-transform shadow-lg shadow-indigo-200">
-               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white h-6 w-6"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></svg>
-            </div>
+            <img src={Logo} alt="WorkNest" className="h-10 group-hover:scale-105 transition-transform" />
             <span className="text-2xl font-bold text-gray-900">WorkNest</span>
           </Link>
           <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome back</h2>
